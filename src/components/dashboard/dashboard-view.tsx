@@ -8,16 +8,18 @@ import { isActionable, moduleLabel } from "@/lib/risk";
 import { getOverview, type AnalyticsSnapshot } from "@/services/analytics";
 import { useData } from "@/providers/data-provider";
 import { ClipboardPlus, UserPlus, Users } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const tooltipStyle = {
-  borderRadius: 12,
-  border: "1px solid #E8E8F0",
-  boxShadow: "0 4px 20px rgba(30,30,50,0.04)",
-  fontSize: 13,
-};
+const RiskDistributionChart = dynamic(
+  () => import("@/components/dashboard/dashboard-charts").then((mod) => mod.RiskDistributionChart),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-soft" /> },
+);
+const ModuleRiskChart = dynamic(
+  () => import("@/components/dashboard/dashboard-charts").then((mod) => mod.ModuleRiskChart),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-soft" /> },
+);
 
 export function DashboardView() {
   const { ready, students, scopedStudents, assessments, activities, classScope } = useData();
@@ -140,22 +142,7 @@ export function DashboardView() {
           <h2 className="text-base font-semibold text-heading">Risk Distribution</h2>
           <p className="mb-4 text-xs text-muted">Students by overall screening concern</p>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.byLevel} layout="vertical" margin={{ left: 16, right: 12 }}>
-                <CartesianGrid stroke="#E8E8F0" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="label" tick={{ fill: "#4F5362", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={18}>
-                  {analytics.byLevel.map((entry) => (
-                    <Cell
-                      key={entry.level}
-                      fill={entry.level === "low" ? "#86EFAC" : entry.level === "moderate" ? "#FCD34D" : entry.level === "elevated" ? "#FDBA74" : "#FCA5A5"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <RiskDistributionChart data={analytics.byLevel} />
           </div>
         </Card>
         <Card className="flex items-center justify-center">
@@ -170,18 +157,7 @@ export function DashboardView() {
         <Card className="xl:col-span-3">
           <h2 className="text-base font-semibold text-heading">Risk by Screening Category</h2>
           <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.byModule}>
-                <CartesianGrid stroke="#E8E8F0" vertical={false} />
-                <XAxis dataKey="module" tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="low" stackId="a" fill="#86EFAC" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="moderate" stackId="a" fill="#FCD34D" />
-                <Bar dataKey="elevated" stackId="a" fill="#FDBA74" />
-                <Bar dataKey="high" stackId="a" fill="#FCA5A5" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <ModuleRiskChart data={analytics.byModule} />
           </div>
         </Card>
         <Card className="xl:col-span-2">

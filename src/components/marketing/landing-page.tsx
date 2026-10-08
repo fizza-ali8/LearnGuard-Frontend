@@ -171,13 +171,10 @@ export function LandingPage() {
             {["Base-Paper Replication", "Multimodal Comparison", "Explainability Evaluation", "Leakage-Aware Validation"].map((item) => (
               <Card key={item}>
                 <h3 className="text-base font-semibold text-heading">{item}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">Documented in the model and validation workspace for the evaluation panel.</p>
+                <p className="mt-2 text-sm leading-6 text-muted">Part of the screening research behind each module.</p>
               </Card>
             ))}
           </div>
-          <Link href="/models" className="mt-6 inline-flex text-sm font-semibold text-primary-dark">
-            View Research & Validation
-          </Link>
         </div>
       </section>
 

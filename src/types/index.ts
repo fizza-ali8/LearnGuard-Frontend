@@ -192,17 +192,6 @@ export interface CreateAssessmentInput {
   file?: File;
 }
 
-export interface ModelMetricRow {
-  method: string;
-  modality: string;
-  accuracy: number;
-  precision: number;
-  recall: number;
-  f1: number;
-  rocAuc: number;
-  status: "Demo data";
-}
-
 export interface HelpArticle {
   id: string;
   category: string;

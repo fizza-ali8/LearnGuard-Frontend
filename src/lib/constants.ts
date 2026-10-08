@@ -1,7 +1,6 @@
 import type { AssessmentType } from "@/types";
 import {
   Activity,
-  BrainCircuit,
   ChartNoAxesCombined,
   CircleQuestionMark,
   ClipboardPlus,
@@ -71,7 +70,6 @@ export const NAV_GROUPS: {
   {
     label: "System",
     items: [
-      { href: "/models", label: "Model Information", icon: BrainCircuit, match: "/models" },
       { href: "/settings", label: "Settings", icon: Settings, match: "/settings" },
       { href: "/help", label: "Help", icon: CircleQuestionMark, match: "/help" },
     ],

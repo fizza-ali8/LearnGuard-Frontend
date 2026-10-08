@@ -67,7 +67,7 @@ export function AboutPage() {
           </Card>
           <Card>
             <h2 className="text-lg font-semibold text-heading">Supervision</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">Supervised within the FAST-NUCES final year project programme. Model claims on the research page are labelled until the leakage-controlled evaluation is locked.</p>
+            <p className="mt-2 text-sm leading-6 text-muted">Supervised within the FAST-NUCES final year project programme.</p>
           </Card>
         </section>
       </main>

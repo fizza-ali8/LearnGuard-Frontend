@@ -112,24 +112,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
-    const payload: StoreState = {
-      ...state,
-      assessments: state.assessments.map((item) => {
-        const next = { ...item };
-        delete next.imageDataUrl;
-        return next;
-      }),
+    const write = () => {
+      const assessments = state.assessments.some((item) => item.imageDataUrl)
+        ? state.assessments.map(({ imageDataUrl: _image, ...assessment }) => assessment)
+        : state.assessments;
+      localStorage.setItem(KEY, JSON.stringify({ ...state, assessments }));
     };
-    localStorage.setItem(KEY, JSON.stringify(payload));
+    const timer = window.setTimeout(write, 200);
+    const onHide = () => {
+      if (document.visibilityState === "hidden") write();
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onHide);
+    };
   }, [ready, state]);
 
   const value = useMemo<DataContextValue>(() => {
     const sections = Array.from(new Set(state.students.map((student) => student.section))).sort();
     const scopedStudents =
       classScope === "all" ? state.students : state.students.filter((student) => student.section === classScope);
-    const studentName = (id: string) => state.students.find((student) => student.id === id)?.name ?? "Student";
+    const names = new Map(state.students.map((student) => [student.id, student.name]));
+    const studentName = (id: string) => names.get(id) ?? "Student";
+    const recentAssessments = state.assessments.length > 8
+      ? [...state.assessments].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 8)
+      : state.assessments;
+    const recentObservations = state.observations.length > 8
+      ? [...state.observations].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8)
+      : state.observations;
     const activities: ActivityItem[] = [
-      ...state.assessments.map((assessment) => ({
+      ...recentAssessments.map((assessment) => ({
         id: assessment.id,
         studentId: assessment.studentId,
         studentName: studentName(assessment.studentId),
@@ -144,7 +157,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         createdAt: assessment.createdAt,
         href: `/results/${assessment.id}`,
       })),
-      ...state.observations.map((observation) => ({
+      ...recentObservations.map((observation) => ({
         id: observation.id,
         studentId: observation.studentId,
         studentName: studentName(observation.studentId),

@@ -116,7 +116,6 @@ function SystemPanel() {
           ))}
         </div>
       </fieldset>
-      <p className="text-xs text-faint">Model weights are not edited here. Research settings live on the model information page.</p>
     </Card>
   );
 }

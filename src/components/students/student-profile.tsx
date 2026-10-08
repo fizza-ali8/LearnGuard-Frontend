@@ -12,11 +12,16 @@ import { usePreferences } from "@/providers/preferences-provider";
 import { useStudent } from "@/hooks/use-student";
 import type { AssessmentType } from "@/types";
 import { Copy, FileText } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
+
+const TimelineChart = dynamic(
+  () => import("@/components/students/timeline-chart").then((mod) => mod.TimelineChart),
+  { ssr: false, loading: () => <div className="mt-6 h-72 animate-pulse rounded-xl bg-soft" /> },
+);
 import { format, parseISO } from "date-fns";
 
 export type ProfileSection = "overview" | "assessments" | "timeline" | "explanations" | "behaviour" | "reports";
@@ -245,17 +250,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               ))}
             </div>
             {chartData.length ? (
-              <div className="mt-6 h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid stroke="#E8E8F0" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[0, 100]} tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="score" stroke="#5F50C8" strokeWidth={2} dot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <TimelineChart data={chartData} />
             ) : (
               <p className="mt-8 text-sm text-muted">No {moduleLabel[timeline].toLowerCase()} assessments recorded yet.</p>
             )}

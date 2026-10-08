@@ -24,7 +24,6 @@ const titles: [string, string][] = [
   ["/analytics", "Analytics"],
   ["/history", "Assessment history"],
   ["/reports", "Reports"],
-  ["/models", "Models and validation"],
   ["/settings", "Settings"],
   ["/help", "Help"],
   ["/results", "Screening result"],

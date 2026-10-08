@@ -51,7 +51,6 @@ export function SiteFooter() {
         </div>
         <div className="flex gap-5 text-sm text-body">
           <Link href="/#privacy" className="hover:text-heading">Privacy</Link>
-          <Link href="/models" className="hover:text-heading">Research</Link>
           <Link href="/about" className="hover:text-heading">About</Link>
           <Link href="/help" className="hover:text-heading">Help</Link>
         </div>

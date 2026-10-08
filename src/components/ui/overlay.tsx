@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -56,29 +55,22 @@ export function Modal({
     };
   }, [open, onClose]);
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
-          <motion.button
+          <button
             type="button"
             aria-label="Close dialog"
-            className="absolute inset-0 bg-[#20202A]/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="lg-fade absolute inset-0 bg-[#20202A]/30"
             onClick={onClose}
           />
-          <motion.div
+          <div
             ref={ref}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.18 }}
-            className={cn("relative z-10 w-full max-w-lg rounded-[18px] border border-line bg-surface p-6 shadow-card", className)}
+            className={cn("lg-rise relative z-10 w-full max-w-lg rounded-[18px] border border-line bg-surface p-6 shadow-card", className)}
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
@@ -92,10 +84,8 @@ export function Modal({
               </button>
             </div>
             {children}
-          </motion.div>
+          </div>
         </div>
-      ) : null}
-    </AnimatePresence>
   );
 }
 
@@ -141,31 +131,20 @@ export function Drawer({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open ? (
         <div className="fixed inset-0 z-50 md:hidden">
-          <motion.button
+          <button
             type="button"
             aria-label="Close menu"
-            className="absolute inset-0 bg-[#20202A]/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="lg-fade absolute inset-0 bg-[#20202A]/30"
             onClick={onClose}
           />
-          <motion.div
-            initial={{ x: -280 }}
-            animate={{ x: 0 }}
-            exit={{ x: -280 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-y-0 left-0 w-[280px] border-r border-line bg-surface"
-          >
+          <div className="lg-drawer absolute inset-y-0 left-0 w-[280px] border-r border-line bg-surface">
             {children}
-          </motion.div>
+          </div>
         </div>
-      ) : null}
-    </AnimatePresence>
   );
 }
 
