@@ -6,7 +6,11 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     const adhdApi = process.env.ADHD_API_URL || "http://127.0.0.1:8000";
-    return [{ source: "/api/adhd/:path*", destination: `${adhdApi}/api/adhd/:path*` }];
+    const dyslexiaApi = process.env.DYSLEXIA_API_URL || "http://127.0.0.1:8001";
+    return [
+      { source: "/api/adhd/:path*", destination: `${adhdApi}/api/adhd/:path*` },
+      { source: "/api/dyslexia/:path*", destination: `${dyslexiaApi}/api/dyslexia/:path*` },
+    ];
   },
 };
 

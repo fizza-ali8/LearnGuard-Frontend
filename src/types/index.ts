@@ -58,6 +58,16 @@ export interface AdhdModelResult {
   topFactors: AdhdTopFactor[];
 }
 
+/** Research audio check only. It is not a dyslexia score and must stay out of fusion. */
+export interface DyslexiaAudioResult {
+  status: "not_assessed";
+  durationSeconds: number;
+  estimatedActivitySeconds: number;
+  qualityFlags: string[];
+  disclaimer: string;
+  predictionAvailable: false;
+}
+
 export interface RiskProfile {
   dyslexia?: RiskResult;
   dysgraphia?: RiskResult;
@@ -95,7 +105,8 @@ export interface Assessment {
   id: string;
   studentId: string;
   type: AssessmentType;
-  score: number;
+  /** Null when a dyslexia audio check was recorded and no risk score exists. */
+  score: number | null;
   riskLevel: RiskLevel;
   createdAt: string;
   teacher: string;
@@ -119,6 +130,7 @@ export interface Assessment {
   respondentRelationship?: string;
   questionnaireSummary?: { section: string; label: string; answer: string }[];
   adhdResult?: AdhdModelResult;
+  dyslexiaAudio?: DyslexiaAudioResult;
   status?: AssessmentStatus;
   model?: AssessmentModelMetadata;
 }

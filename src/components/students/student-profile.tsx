@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Breadcrumb, Card, EmptyState, ErrorState, LinkTabs, PageHeader, Skeleton, StudentAvatar } from "@/components/ui/display";
 import { ConfirmDialog, DropdownMenu } from "@/components/ui/overlay";
 import { RiskBadge, RiskBar } from "@/components/ui/risk";
+import { DYSLEXIA_DISCLAIMER, qualityCheckText } from "@/lib/dyslexia-audio";
 import { formatDate } from "@/lib/format";
 import { moduleFullLabel, moduleLabel, OVERALL_CONCERN_NOTE } from "@/lib/risk";
 import { copyText } from "@/lib/utils";
@@ -61,7 +62,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
 
   const chartData = useMemo(() => {
     return assessments
-      .filter((item) => item.type === timeline && timeline !== "adhd")
+      .filter((item): item is typeof item & { score: number } => item.type === timeline && timeline !== "adhd" && !item.dyslexiaAudio && typeof item.score === "number")
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map((item) => ({ label: format(parseISO(item.createdAt), "MMM"), score: item.score }));
   }, [assessments, timeline]);
@@ -79,6 +80,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
 
   const modules: AssessmentType[] = ["dyslexia", "dysgraphia", "adhd"];
   const latest = assessments[0];
+  const audioReview = assessments.find((item) => item.type === "dyslexia" && item.dyslexiaAudio);
 
   return (
     <div>
@@ -104,7 +106,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
             <DropdownMenu
               trigger={<Button variant="secondary">More</Button>}
               items={[
-                { label: "Dyslexia screening", href: `/assessment/dyslexia/${student.id}` },
+                { label: "Dyslexia audio analysis", href: `/assessment/dyslexia/${student.id}` },
                 { label: "Dysgraphia screening", href: `/assessment/dysgraphia/${student.id}` },
                 { label: "ADHD caregiver screening", href: `/assessment/adhd/${student.id}` },
                 { label: "Log classroom observation", href: `/behaviour/log/${student.id}` },
@@ -176,6 +178,15 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                   <p className="mt-2 text-xs leading-5 text-faint">Research prototype. Not a diagnosis or a replacement for professional assessment.</p>
                   <Link href={`/students/${student.id}/assessments`} className="mt-3 inline-flex text-sm font-medium text-primary-dark">View details</Link>
                 </>
+              ) : type === "dyslexia" && audioReview?.dyslexiaAudio ? (
+                <>
+                  <p className="mt-4 text-sm font-semibold text-heading">Not assessed</p>
+                  <p className="mt-2 text-sm text-muted">Duration: {audioReview.dyslexiaAudio.durationSeconds.toFixed(2)} seconds</p>
+                  <p className="mt-1 text-sm leading-6 text-muted">estimated audio activity (not reading speed, not verified speech): {audioReview.dyslexiaAudio.estimatedActivitySeconds.toFixed(2)} seconds</p>
+                  <p className="mt-1 text-sm text-muted">Quality check: {qualityCheckText(audioReview.dyslexiaAudio.qualityFlags)}</p>
+                  <p className="mt-2 text-xs leading-5 text-faint">{DYSLEXIA_DISCLAIMER}</p>
+                  <Link href={`/results/${audioReview.id}`} className="mt-3 inline-flex text-sm font-medium text-primary-dark">View details</Link>
+                </>
               ) : result ? (
                 <>
                   <div className="mt-3 flex items-center justify-between gap-3">
@@ -214,6 +225,9 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                   if (result?.researchScreen) {
                     return <p key={type} className="text-sm text-body"><span className="font-medium text-heading">{moduleLabel[type]}. </span>{result.researchScreen === "elevated_pattern" ? adhdScreenStatus(true) : adhdScreenStatus(false)}</p>;
                   }
+                  if (type === "dyslexia" && !result && audioReview) {
+                    return <p key={type} className="text-sm text-body"><span className="font-medium text-heading">Dyslexia. </span>Not assessed. No risk score is available.</p>;
+                  }
                   return <RiskBar key={type} label={moduleLabel[type]} value={result?.score ?? 0} level={result?.level} />;
                 })}
               </div>
@@ -229,8 +243,8 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               {latest ? (
                 <div className="mt-4">
                   <p className="text-sm font-medium text-heading">{moduleFullLabel[latest.type]}</p>
-                  <p className="text-xs text-muted">{formatDate(latest.createdAt, preferences.dateFormat)} · {latest.adhdResult ? adhdScreenStatus(latest.adhdResult.screenPositive) : `${latest.score}%`}</p>
-                  <p className="mt-3 text-sm leading-6 text-body">{latest.factors[0]?.label}: {latest.factors[0]?.detail}</p>
+                  <p className="text-xs text-muted">{formatDate(latest.createdAt, preferences.dateFormat)} · {latest.dyslexiaAudio ? "Not assessed" : latest.adhdResult ? adhdScreenStatus(latest.adhdResult.screenPositive) : `${latest.score}%`}</p>
+                  {latest.dyslexiaAudio ? <p className="mt-3 text-sm leading-6 text-body">{DYSLEXIA_DISCLAIMER}</p> : <p className="mt-3 text-sm leading-6 text-body">{latest.factors[0]?.label}: {latest.factors[0]?.detail}</p>}
                   <Link href={`/results/${latest.id}`} className="mt-4 inline-flex">
                     <Button variant="secondary" size="sm">Open result</Button>
                   </Link>
@@ -270,7 +284,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                     <p className="text-xs text-muted">{formatDate(item.createdAt, preferences.dateFormat)} · {item.teacher}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    {item.adhdResult ? <span className="text-sm font-semibold text-heading">{adhdScreenStatus(item.adhdResult.screenPositive)}</span> : <><span className="font-heading text-2xl font-bold text-heading">{item.score}%</span><RiskBadge level={item.riskLevel} /></>}
+                    {item.dyslexiaAudio ? <span className="text-sm font-semibold text-heading">Not assessed</span> : item.adhdResult ? <span className="text-sm font-semibold text-heading">{adhdScreenStatus(item.adhdResult.screenPositive)}</span> : <><span className="font-heading text-2xl font-bold text-heading">{item.score}%</span><RiskBadge level={item.riskLevel} /></>}
                     <Link href={`/results/${item.id}`}><Button variant="secondary" size="sm">View Result</Button></Link>
                   </div>
                 </Card>
@@ -304,6 +318,12 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               )
             ) : chartData.length ? (
               <TimelineChart data={chartData} />
+            ) : timeline === "dyslexia" && assessments.some((item) => item.dyslexiaAudio) ? (
+              <ul className="mt-4 space-y-2 text-sm text-body">
+                {assessments.filter((item) => item.dyslexiaAudio).map((item) => (
+                  <li key={item.id}>{formatDate(item.createdAt, preferences.dateFormat)} · Not assessed. No risk score is available.</li>
+                ))}
+              </ul>
             ) : (
               <p className="mt-8 text-sm text-muted">No {moduleLabel[timeline].toLowerCase()} assessments recorded yet.</p>
             )}
@@ -316,20 +336,22 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               <Card key={item.id}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-heading">{moduleFullLabel[item.type]}</p>
-                  {item.adhdResult ? <span className="text-sm font-medium text-heading">{adhdScreenStatus(item.adhdResult.screenPositive)}</span> : <RiskBadge level={item.riskLevel} />}
+                  {item.dyslexiaAudio ? <span className="text-sm font-medium text-heading">Not assessed</span> : item.adhdResult ? <span className="text-sm font-medium text-heading">{adhdScreenStatus(item.adhdResult.screenPositive)}</span> : <RiskBadge level={item.riskLevel} />}
                 </div>
                 <p className="mt-2 text-xs text-muted">{formatDate(item.createdAt, preferences.dateFormat)}</p>
-                <p className="mt-3 text-sm leading-6 text-body">{item.adhdResult?.message ?? item.explanation}</p>
+                <p className="mt-3 text-sm leading-6 text-body">{item.dyslexiaAudio ? DYSLEXIA_DISCLAIMER : item.adhdResult?.message ?? item.explanation}</p>
                 {item.adhdResult ? <p className="mt-2 text-xs leading-5 text-faint">{item.adhdResult.disclaimer}</p> : null}
-                <ul className="mt-3 space-y-1 text-sm text-muted">
+                {item.dyslexiaAudio ? null : <ul className="mt-3 space-y-1 text-sm text-muted">
                   {(item.adhdResult ? item.adhdResult.topFactors.slice(0, 3).map((factor) => ({ key: factor.feature, text: `${factor.question}: ${factor.answer}` })) : item.factors.slice(0, 3).map((factor) => ({ key: factor.label, text: `${factor.label} · ${factor.impact} contribution` }))).map((factor) => (
                     <li key={factor.key}>{factor.text}</li>
                   ))}
-                </ul>
-                <details className="mt-3 text-sm">
-                  <summary className="cursor-pointer font-medium text-primary-dark">Technical view</summary>
-                  <p className="mt-2 text-muted">{item.modelName} {item.modelVersion} · {item.explanationMethod} · Dataset {item.datasetVersion}</p>
-                </details>
+                </ul>}
+                {item.dyslexiaAudio ? null : (
+                  <details className="mt-3 text-sm">
+                    <summary className="cursor-pointer font-medium text-primary-dark">Technical view</summary>
+                    <p className="mt-2 text-muted">{item.modelName} {item.modelVersion} · {item.explanationMethod} · Dataset {item.datasetVersion}</p>
+                  </details>
+                )}
               </Card>
             )) : <EmptyState icon={<FileText className="h-5 w-5" />} title="No explanations yet." description="Explanations appear after a screening is analysed." />}
           </div>

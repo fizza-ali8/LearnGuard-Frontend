@@ -75,8 +75,8 @@ export function HistoryView() {
               { key: "date", header: "Date", cell: (row: Assessment) => formatDate(row.createdAt, preferences.dateFormat) },
               { key: "student", header: "Student", cell: (row) => students.find((student) => student.id === row.studentId)?.name ?? "Student" },
               { key: "type", header: "Assessment", cell: (row) => moduleFullLabel[row.type as AssessmentType] },
-              { key: "score", header: "Score", cell: (row) => row.adhdResult ? adhdScreenStatus(row.adhdResult.screenPositive) : `${row.score}%` },
-              { key: "risk", header: "Risk", cell: (row) => <RiskBadge level={row.riskLevel} /> },
+              { key: "score", header: "Score", cell: (row) => row.dyslexiaAudio ? "Not assessed" : row.adhdResult ? adhdScreenStatus(row.adhdResult.screenPositive) : `${row.score}%` },
+              { key: "risk", header: "Risk", cell: (row) => row.dyslexiaAudio ? <span className="text-sm text-muted">Not assessed</span> : <RiskBadge level={row.riskLevel} /> },
               { key: "teacher", header: "Teacher", cell: (row) => row.teacher },
               { key: "action", header: "Action", cell: (row) => <Link href={`/results/${row.id}`}><Button variant="secondary" size="sm">View Result</Button></Link> },
             ]}

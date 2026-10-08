@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Dyslexia research recordings and the unused pilot model. Do not commit audio.
+models/Dyslexia/**/*.mp4
+models/Dyslexia/**/*.m4a
+models/Dyslexia/**/*.wav
+models/Dyslexia/**/*.mp3
+models/Dyslexia/**/*.ogg
+models/Dyslexia/**/*.flac
+models/Dyslexia/**/*.aac
+models/Dyslexia/**/*.zip
+models/Dyslexia/**/*.joblib
+backend/dyslexia/**/*.joblib
+
+# Dysgraphia training arrays. X_train.npy is over GitHub's 100 MB limit.
+models/Dysgraphia/dysgraphia_cnn_data.npz/
+
+# Python bytecode
+__pycache__/
+*.py[cod]

@@ -7,11 +7,13 @@ import {
   seedReports,
   seedStudents,
 } from "@/data/seed";
+import { DYSLEXIA_DISCLAIMER } from "@/lib/dyslexia-audio";
 import { overallFromProfile } from "@/lib/risk";
 import { adhdRiskFromAssessment, legacyAdhdRisk, repairAdhdAssessment } from "@/lib/screening";
 import { createAssessment } from "@/services/assessments";
 import type { AdhdQuestion } from "@/data/adhd-questionnaire";
 import { predictAdhd, type AdhdSubmission } from "@/services/adhd";
+import { TEACHER } from "@/lib/constants";
 import { saveBehaviourObservation } from "@/services/behaviour";
 import { generateReport } from "@/services/reports";
 import { createStudent } from "@/services/students";
@@ -49,6 +51,12 @@ interface DataContextValue extends StoreState {
   restoreDemo: () => void;
   runAssessment: (input: CreateAssessmentInput) => Promise<Assessment>;
   submitAdhdScreening: (input: AdhdSubmission, questions?: AdhdQuestion[]) => Promise<Assessment>;
+  saveDyslexiaAudio: (input: {
+    studentId: string;
+    durationSeconds: number;
+    estimatedActivitySeconds: number;
+    qualityFlags: string[];
+  }) => Promise<Assessment>;
   saveObservation: (draft: ObservationDraft) => Promise<BehaviourObservation>;
   createReport: (studentId: string) => Promise<Report>;
   markNotificationRead: (id: string) => void;
@@ -87,12 +95,21 @@ function reconcileStore(state: StoreState): StoreState {
 }
 
 function applyAssessment(student: Student, assessment: Assessment): Student {
+  if (assessment.type === "dyslexia" && assessment.dyslexiaAudio) {
+    const { dyslexia: _omit, ...withoutDyslexia } = student.riskProfile;
+    const overall = overallFromProfile(withoutDyslexia);
+    return {
+      ...student,
+      updatedAt: assessment.createdAt,
+      riskProfile: { ...withoutDyslexia, overallConcern: overall.level, overallNote: overall.note },
+    };
+  }
   const riskProfile = {
     ...student.riskProfile,
     [assessment.type]: assessment.type === "adhd" && assessment.adhdResult
       ? adhdRiskFromAssessment(assessment)
       : {
-          score: assessment.score,
+          score: assessment.score ?? 0,
           level: assessment.riskLevel,
           assessedAt: assessment.createdAt,
           confidence: assessment.confidence,
@@ -170,14 +187,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         id: assessment.id,
         studentId: assessment.studentId,
         studentName: studentName(assessment.studentId),
-        title:
-          assessment.type === "dyslexia"
+        title: assessment.dyslexiaAudio
+          ? "Dyslexia audio analysis recorded"
+          : assessment.type === "dyslexia"
             ? "Dyslexia assessment completed"
             : assessment.type === "dysgraphia"
               ? "Handwriting screening completed"
               : "ADHD caregiver screening completed",
-        detail: assessment.adhdResult?.message ?? assessment.explanation,
-        riskLevel: assessment.riskLevel,
+        detail: assessment.dyslexiaAudio?.disclaimer ?? assessment.adhdResult?.message ?? assessment.explanation,
+        riskLevel: assessment.dyslexiaAudio ? undefined : assessment.riskLevel,
         createdAt: assessment.createdAt,
         href: `/results/${assessment.id}`,
       })),
@@ -270,6 +288,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                   ...current.notifications,
                 ]
               : current.notifications,
+        }));
+        return assessment;
+      },
+      async saveDyslexiaAudio(input) {
+        const student = state.students.find((item) => item.id === input.studentId);
+        if (!student) throw new Error("Student not found");
+        const createdAt = new Date().toISOString();
+        const assessment: Assessment = {
+          id: `asm-${Date.now()}`,
+          studentId: student.id,
+          type: "dyslexia",
+          score: null,
+          riskLevel: "low",
+          createdAt,
+          teacher: TEACHER.name,
+          explanation: DYSLEXIA_DISCLAIMER,
+          factors: [],
+          recommendation: DYSLEXIA_DISCLAIMER,
+          dyslexiaAudio: {
+            status: "not_assessed",
+            durationSeconds: input.durationSeconds,
+            estimatedActivitySeconds: input.estimatedActivitySeconds,
+            qualityFlags: input.qualityFlags,
+            disclaimer: DYSLEXIA_DISCLAIMER,
+            predictionAvailable: false,
+          },
+        };
+        setState((current) => ({
+          ...current,
+          assessments: [assessment, ...current.assessments],
+          students: current.students.map((item) => (item.id === student.id ? applyAssessment(item, assessment) : item)),
         }));
         return assessment;
       },

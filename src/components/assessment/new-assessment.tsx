@@ -62,11 +62,11 @@ function Wizard() {
           <div className="grid gap-4 lg:grid-cols-3">
             <ModuleCard
               icon={<Mic className="h-5 w-5" />}
-              title="Dyslexia Screening"
-              input="Oral reading + language"
-              body="Evaluate reading fluency, omissions, timing and linguistic patterns."
-              time="5–8 min"
-              action="Start Dyslexia Screening"
+              title="Dyslexia audio analysis"
+              input="Audio recording"
+              body="Research audio check only. No dyslexia risk score is produced."
+              time="About 1 min"
+              action="Analyse audio"
               disabled={!student?.consentVerified}
               onClick={() => router.push(`/assessment/dyslexia/${studentId}`)}
             />

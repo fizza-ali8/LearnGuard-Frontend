@@ -1,0 +1,94 @@
+{
+  "dataset": {
+    "total": 15,
+    "reported_dyslexic": 12,
+    "reported_control": 3,
+    "participant_ids_verified": false,
+    "age_known": false,
+    "passage_known": false,
+    "very_short_controls": 3
+  },
+  "protocol": {
+    "model": "class_balanced_regularized_logistic_regression",
+    "features": [
+      "mfcc_2_mean",
+      "mfcc_3_mean",
+      "mfcc_4_mean",
+      "mfcc_5_mean",
+      "mfcc_2_std",
+      "mfcc_3_std",
+      "mfcc_4_std",
+      "mfcc_5_std"
+    ],
+    "matched_excerpt_seconds": 1.5,
+    "evaluation": "leave_one_recording_out_no_unseen_holdout",
+    "split_group": "recording_not_verified_child",
+    "threshold": 0.5,
+    "training_fold_only_scaling": true,
+    "model_selection": "none_fixed_before_evaluation",
+    "no_model_should_be_used_to_screen_children": true
+  },
+  "pilot_mfcc_model": {
+    "accuracy": 0.6666666666666666,
+    "balanced_accuracy": 0.7916666666666667,
+    "sensitivity": 0.5833333333333334,
+    "specificity": 1.0,
+    "sensitivity_95pct_CI": [
+      0.2767,
+      0.8483
+    ],
+    "specificity_95pct_CI": [
+      0.2924,
+      1
+    ],
+    "precision": 1.0,
+    "roc_auc": 0.7777777777777779,
+    "pr_auc": 0.9515873015873016,
+    "confusion_matrix": {
+      "TN": 3,
+      "FP": 0,
+      "FN": 5,
+      "TP": 7
+    }
+  },
+  "duration_only_control": {
+    "accuracy": 0.9333333333333333,
+    "balanced_accuracy": 0.9583333333333333,
+    "sensitivity": 0.9166666666666666,
+    "specificity": 1.0,
+    "sensitivity_95pct_CI": [
+      0.6152,
+      0.9979
+    ],
+    "specificity_95pct_CI": [
+      0.2924,
+      1
+    ],
+    "precision": 1.0,
+    "roc_auc": 0.9444444444444444,
+    "pr_auc": 0.9880952380952382,
+    "confusion_matrix": {
+      "TN": 3,
+      "FP": 0,
+      "FN": 1,
+      "TP": 11
+    }
+  },
+  "majority_class_baseline": {
+    "accuracy": 0.8,
+    "balanced_accuracy": 0.5,
+    "sensitivity": 1.0,
+    "specificity": 0.0
+  },
+  "exploratory_label_permutation_p": 0.14,
+  "permutations": 99,
+  "deployment": "analysis_only; do not display a dyslexia risk score or binary diagnosis in child-facing UI",
+  "limitations": [
+    "three control recordings are only 2-5 seconds",
+    "no passage, transcript, age, language, or verified participant IDs",
+    "device, task, and recording length may correlate with label",
+    "only three independent controls at best; specificity is very uncertain",
+    "same-person recording groups not verified; this is not subject-level CV",
+    "no external, prospective or clinical validation"
+  ]
+}

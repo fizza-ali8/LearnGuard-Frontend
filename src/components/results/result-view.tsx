@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, Breadcrumb, Card, DemoBadge, ErrorState, PageHeader, Tabs } from "@/components/ui/display";
 import { RiskBadge, RiskBar, RiskGauge } from "@/components/ui/risk";
 import { PRODUCT } from "@/lib/constants";
+import { DYSLEXIA_ACTIVITY_LABEL, DYSLEXIA_DISCLAIMER, qualityCheckText } from "@/lib/dyslexia-audio";
 import { formatDate, formatDuration } from "@/lib/format";
 import { adhdScreenStatus, featureLabel } from "@/data/adhd-questionnaire";
 import { moduleFullLabel } from "@/lib/risk";
@@ -27,6 +28,41 @@ export function ResultView({ assessmentId }: { assessmentId: string }) {
 
   if (!assessment || !student) {
     return <ErrorState title="We couldn’t open this result." description="The assessment may have been removed from this browser." action={<Button onClick={() => router.push("/history")}>Back to history</Button>} />;
+  }
+
+  if (assessment.dyslexiaAudio) {
+    const audio = assessment.dyslexiaAudio;
+    return (
+      <div>
+        <PageHeader
+          title="Dyslexia audio analysis"
+          subtitle={formatDate(assessment.createdAt, preferences.dateFormat)}
+          breadcrumb={<Breadcrumb items={[{ label: "Students", href: "/students" }, { label: student.name, href: `/students/${student.id}` }, { label: "Dyslexia audio analysis" }]} />}
+        />
+        <Card className="max-w-2xl">
+          <h2 className="text-lg font-semibold text-heading">Not assessed</h2>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div>
+              <dt className="text-muted">Duration</dt>
+              <dd className="font-medium text-heading">{audio.durationSeconds.toFixed(2)} seconds</dd>
+            </div>
+            <div>
+              <dt className="text-muted">{DYSLEXIA_ACTIVITY_LABEL}</dt>
+              <dd className="font-medium text-heading">{audio.estimatedActivitySeconds.toFixed(2)} seconds</dd>
+            </div>
+            <div>
+              <dt className="text-muted">Quality check</dt>
+              <dd className="font-medium text-heading">{qualityCheckText(audio.qualityFlags)}</dd>
+            </div>
+          </dl>
+          <p className="mt-4 text-sm leading-6 text-body">{DYSLEXIA_DISCLAIMER}</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => router.push(`/students/${student.id}`)}>Return to student</Button>
+            <Link href={`/assessment/dyslexia/${student.id}`}><Button variant="tertiary">Analyse another recording</Button></Link>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -71,7 +107,7 @@ export function ResultView({ assessmentId }: { assessmentId: string }) {
         ) : (
         <Card className="flex flex-col items-center">
           <h2 className="mb-2 self-start text-base font-semibold text-heading">Risk Summary</h2>
-          <RiskGauge value={assessment.score} level={assessment.riskLevel} />
+          <RiskGauge value={assessment.score ?? 0} level={assessment.riskLevel} />
           <p className="mt-2 text-sm text-muted">{student.name}</p>
           {assessment.audioDurationSec ? <p className="text-xs text-faint">Audio {formatDuration(assessment.audioDurationSec)}</p> : null}
         </Card>

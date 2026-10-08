@@ -165,7 +165,7 @@ export function adhdRiskFromAssessment(assessment: Assessment): RiskResult {
 export function repairAdhdAssessment(assessment: Assessment): Assessment {
   if (assessment.type !== "adhd") return assessment;
   if (!assessment.adhdResult) {
-    const screenPositive = legacyAdhdScreenPositive(assessment.score, assessment.riskLevel);
+    const screenPositive = legacyAdhdScreenPositive(assessment.score ?? 0, assessment.riskLevel);
     const level = adhdConcernLevel(screenPositive);
     const message = adhdScreenMessage(screenPositive);
     return {

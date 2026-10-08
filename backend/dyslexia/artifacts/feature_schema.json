@@ -1,0 +1,24 @@
+{
+  "features": [
+    "mfcc_2_mean",
+    "mfcc_3_mean",
+    "mfcc_4_mean",
+    "mfcc_5_mean",
+    "mfcc_2_std",
+    "mfcc_3_std",
+    "mfcc_4_std",
+    "mfcc_5_std"
+  ],
+  "sample_rate": 16000,
+  "excerpt_seconds": 1.5,
+  "policy": "acoustic research only, not clinical screening",
+  "expected_audio_formats": [
+    ".aac",
+    ".flac",
+    ".m4a",
+    ".mp3",
+    ".mp4",
+    ".ogg",
+    ".wav"
+  ]
+}

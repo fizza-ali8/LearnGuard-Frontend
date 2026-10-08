@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "adhd-api": "python -m uvicorn app:app --app-dir models/ADHD --host 127.0.0.1 --port 8000"
+    "adhd-api": "python -m uvicorn app:app --app-dir models/ADHD --host 127.0.0.1 --port 8000",
+    "dyslexia-api": "python -m uvicorn app:app --app-dir backend/dyslexia/api --host 127.0.0.1 --port 8001"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable, EmptyState, PageHeader, Skeleton } from "@/components/ui/display";
 import { RiskBadge, RiskBar } from "@/components/ui/risk";
 import { PRODUCT } from "@/lib/constants";
+import { DYSLEXIA_DISCLAIMER, qualityCheckText } from "@/lib/dyslexia-audio";
 import { formatDate } from "@/lib/format";
 import { adhdScreenStatus, featureLabel } from "@/data/adhd-questionnaire";
 import { moduleFullLabel, moduleLabel, OVERALL_CONCERN_NOTE, riskLabel } from "@/lib/risk";
@@ -170,16 +171,26 @@ export function ReportPreview({ studentId }: { studentId: string }) {
                   {item.respondentRelationship ? <p>Respondent type: {item.respondentRelationship}</p> : null}
                   <p className="text-xs">Earlier demonstration record. A new questionnaire uses the saved screening model.</p>
                 </div>
+              ) : type === "dyslexia" && item.dyslexiaAudio ? (
+                <div className="mt-2 space-y-1 text-sm text-muted">
+                  <p>Status: not assessed</p>
+                  <p>Duration: {item.dyslexiaAudio.durationSeconds.toFixed(2)} seconds</p>
+                  <p>estimated audio activity (not reading speed, not verified speech): {item.dyslexiaAudio.estimatedActivitySeconds.toFixed(2)} seconds</p>
+                  <p>Quality check: {qualityCheckText(item.dyslexiaAudio.qualityFlags)}</p>
+                  <p className="leading-6 text-body">{DYSLEXIA_DISCLAIMER}</p>
+                </div>
               ) : (
                 <p className="mt-2 text-sm text-muted">{item.score}% · {formatDate(item.createdAt, preferences.dateFormat)}</p>
               )}
-              {type === "adhd" && item.adhdResult ? null : <p className="mt-2 text-sm leading-6 text-body">{item.explanation}</p>}
-              <p className="mt-3 text-sm font-medium text-heading">{type === "adhd" ? "Key model-influencing responses" : "Signals"}</p>
-              <ul className="mt-2 text-sm text-muted">
-                {type === "adhd" && item.adhdResult
-                  ? item.adhdResult.topFactors.map((factor) => <li key={factor.feature}>{factor.question}: {factor.answer}. {factor.direction === "toward_flag" ? "Associated with the elevated pattern." : "Associated with moving away from the elevated pattern."} This is not evidence of a cause.</li>)
-                  : item.factors.map((factor) => <li key={factor.label}>{type === "adhd" ? featureLabel(factor.label) : factor.label}: {factor.detail ?? factor.impact}</li>)}
-              </ul>
+              {item.dyslexiaAudio || (type === "adhd" && item.adhdResult) ? null : <p className="mt-2 text-sm leading-6 text-body">{item.explanation}</p>}
+              {item.dyslexiaAudio ? null : <p className="mt-3 text-sm font-medium text-heading">{type === "adhd" ? "Key model-influencing responses" : "Signals"}</p>}
+              {item.dyslexiaAudio ? null : (
+                <ul className="mt-2 text-sm text-muted">
+                  {type === "adhd" && item.adhdResult
+                    ? item.adhdResult.topFactors.map((factor) => <li key={factor.feature}>{factor.question}: {factor.answer}. {factor.direction === "toward_flag" ? "Associated with the elevated pattern." : "Associated with moving away from the elevated pattern."} This is not evidence of a cause.</li>)
+                    : item.factors.map((factor) => <li key={factor.label}>{type === "adhd" ? featureLabel(factor.label) : factor.label}: {factor.detail ?? factor.impact}</li>)}
+                </ul>
+              )}
               {type === "adhd" && item.recommendation ? <p className="mt-3 text-sm leading-6 text-body">{item.recommendation}</p> : null}
               {type === "adhd" && item.questionnaireSummary?.length ? (
                 <details className="mt-3 text-sm">
@@ -203,7 +214,7 @@ export function ReportPreview({ studentId }: { studentId: string }) {
           <h3 className="text-base font-semibold text-heading">Risk Timeline</h3>
           <ul className="mt-2 space-y-1 text-sm text-body">
             {timeline.map((item) => (
-              <li key={item.id}>{formatDate(item.createdAt, preferences.dateFormat)} · {moduleLabel[item.type]} · {item.adhdResult ? adhdScreenStatus(item.adhdResult.screenPositive) : `${item.score}%`}</li>
+              <li key={item.id}>{formatDate(item.createdAt, preferences.dateFormat)} · {moduleLabel[item.type]} · {item.dyslexiaAudio ? "Not assessed" : item.adhdResult ? adhdScreenStatus(item.adhdResult.screenPositive) : `${item.score}%`}</li>
             ))}
           </ul>
         </section>

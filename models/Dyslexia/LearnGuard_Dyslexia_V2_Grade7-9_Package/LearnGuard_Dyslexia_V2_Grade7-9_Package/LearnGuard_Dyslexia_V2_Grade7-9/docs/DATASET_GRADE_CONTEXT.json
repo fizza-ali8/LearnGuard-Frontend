@@ -1,0 +1,12 @@
+{
+  "source": "project team clarification, 2026-10-09",
+  "reported_school_grade_band": "7–9",
+  "grade_band_scope": "all supplied recordings, reported at cohort level",
+  "grade_exact_by_recording_known": false,
+  "age_exact_by_recording_known": false,
+  "age_derived_from_school_grade": false,
+  "age_or_grade_used_by_pilot_model": false,
+  "population_scope_note": "This pilot has only a reported grade 7–9 cohort. It is not validated in any grade/age range, including ages 6–11 used for the separately developed ADHD module.",
+  "research_only": true,
+  "notes": "The project team reports that these recordings were collected from students in grades 7–9. Exact ages and individual grade assignments are unknown and must not be inferred from grade. This is a cohort-level description, not a verified per-child attribute. The pilot model does not use age or grade as an input, so no retraining or metric changes are justified. Do not claim results for grades 1–6 or for the ADHD module’s ages 6–11. The recording-length imbalance and absence of matched reading passages remain unresolved."
+}

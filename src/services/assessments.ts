@@ -32,7 +32,7 @@ export async function getStudentHistory(studentId: string) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-export function toAssessmentScore(payload: { score?: number; probability?: number }) {
+export function toAssessmentScore(payload: { score?: number | null; probability?: number }) {
   if (typeof payload.score === "number") return payload.score;
   if (typeof payload.probability === "number") {
     return Math.round(payload.probability <= 1 ? payload.probability * 100 : payload.probability);

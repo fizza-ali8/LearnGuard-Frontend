@@ -1,0 +1,16 @@
+filename,label,participant_id,participant_verified,age,passage_id,language,consent_verified,sha256,duration_sec,rms_dbfs,clipping_fraction,estimated_activity_sec,estimated_activity_fraction,activity_method,longest_inactive_gap_sec,matched_window_start_sec,quality_warning
+New Recording 36.m4a.mp4,0,,False,,,,False,cf207de0c219575079b248b6efc08563e4f9d8df17b277fb6f28d7dc0285ea76,4.629,-18.52,0.0,4.47,0.968,webrtcvad_30ms_mode2,0.06,0.15,very_short_recording
+New Recording 37.m4a.mp4,0,,False,,,,False,8da99951678b9c43ed52553b7bdf197f389cf347907aca0c93990cf3140c5be3,2.069,-25.85,0.0,1.95,0.956,webrtcvad_30ms_mode2,0.09,0.3,very_short_recording
+New Recording 38.m4a.mp4,0,,False,,,,False,44d8d2259738da0f303b3ad0da75772b3a77d491603e4dc910ac0ecb3ff472e7,3.413,-25.67,0.0,3.27,0.965,webrtcvad_30ms_mode2,0.06,0.27,very_short_recording
+a1.mp4,1,,False,,,,False,c4c7078aa21458e74f7a89284ce6dfc815068f1ae3c695e4158f9fd330c85488,17.813,-18.84,0.0,16.14,0.907,webrtcvad_30ms_mode2,0.39,5.55,short_recording
+a10.mp4,1,,False,,,,False,2009d679135346cacef3420fd10b9b358470509b1bec4ef48db2a6c4487c6234,35.925,-22.92,0.0,19.8,0.551,webrtcvad_30ms_mode2,1.29,0.33,
+a11.mp4,1,,False,,,,False,78f1e465b4c26ceec1829ffa9f82f7eb169cdb6b5c74122db63a556c7cbc651e,44.181,-39.17,0.0,16.89,0.382,webrtcvad_30ms_mode2,6.3,13.41,
+a12.mp4,1,,False,,,,False,f969ec5532af24d7c7986df3d96b00c6e2a8fc68525ef31e305745e93b86d4fa,59.349,-34.52,0.0,29.34,0.494,webrtcvad_30ms_mode2,5.04,31.29,
+a2.mp4,1,,False,,,,False,f9f9857f410070a29061559dad6e6d5ad54c9d9f380fba0881f89f3b3ca4a760,59.093,-24.69,0.0,43.53,0.737,webrtcvad_30ms_mode2,1.2,16.44,
+a3.mp4,1,,False,,,,False,2879fbeaadbfccf75a594cdffe9a63fac91cf539c3ee084229e7f39ffa02f060,37.568,-25.76,0.0,24.72,0.658,webrtcvad_30ms_mode2,1.56,34.98,
+a4.mp4,1,,False,,,,False,0b63c1a0e3aa4a0f31e641527cc6aa312173f102157287be5e1ee52ccef29acd,14.763,-28.49,0.0,11.04,0.748,webrtcvad_30ms_mode2,0.6,5.55,short_recording
+a5.mp4,1,,False,,,,False,61d7c7d7ca5f5e6e0e0c7411c5c2be25ddd9dc12645912fcdd822caacb6899b5,144.277,-28.45,0.0,109.17,0.757,webrtcvad_30ms_mode2,1.29,131.61,
+a6.mp4,1,,False,,,,False,5f3ecf996d3363abfbe85142706052d601bbeb3acc582c7a9b97e38fad62033a,144.213,-30.53,0.0,112.32,0.779,webrtcvad_30ms_mode2,0.81,3.57,
+a7.mp4,1,,False,,,,False,c29efc3aff8dc2de43d1202dde514d2c22e6fce2ccf4b8d65e543c0f786ada74,2.944,-31.56,0.0,2.82,0.959,webrtcvad_30ms_mode2,0.12,0.27,very_short_recording
+a8.mp4,1,,False,,,,False,bbd3481ef92f6e9eae215a2841f1c4a7f56bffcec9096d35162abc9175d6a8b7,23.893,-33.08,0.0,14.22,0.595,webrtcvad_30ms_mode2,1.59,20.28,
+a9.mp4,1,,False,,,,False,31ca6c94b3c2ce13f1cac39e463cab9d8f3b9e5408b05fa66886a47c5cf96cdd,11.776,-38.47,0.0,6.0,0.51,webrtcvad_30ms_mode2,2.79,1.86,short_recording
