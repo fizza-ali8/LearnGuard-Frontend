@@ -146,6 +146,15 @@ function HeatCell({
   if (!result) {
     return <span className="inline-flex rounded-xl bg-soft px-3 py-2 text-xs text-muted">Not assessed</span>;
   }
+  if (type === "adhd" && result.researchScreen) {
+    const elevated = result.researchScreen === "elevated_pattern";
+    return (
+      <button type="button" onClick={() => onOpen(href)} className={`w-full rounded-xl px-3 py-2 text-left ${elevated ? "bg-primary-soft" : "bg-soft"}`}>
+        <span className="block text-xs font-semibold text-heading">{elevated ? "Elevated pattern" : "No elevated pattern"}</span>
+        <span className="text-[11px] text-muted">Caregiver questionnaire</span>
+      </button>
+    );
+  }
   const tone = riskTone(result.level);
   return (
     <button

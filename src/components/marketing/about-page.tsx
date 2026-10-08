@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/display";
 const modules = [
   ["Dyslexia", "Oral-reading audio and language features, explained with contribution scores."],
   ["Dysgraphia", "Handwriting images with a region-level influence view."],
-  ["ADHD-related", "Repeated classroom observations of attention, task completion and behaviour."],
+  ["ADHD-Related Screening", "A 20-item caregiver questionnaire about attention, school functioning, social behaviour, sleep, routines and activities. It supports screening and does not diagnose ADHD."],
 ];
 
 export function AboutPage() {
@@ -15,13 +15,13 @@ export function AboutPage() {
         <p className="text-sm font-medium text-primary-dark">About LearnGuard</p>
         <h1 className="mt-3 text-4xl font-bold text-heading md:text-5xl">A screening workspace for earlier educational support.</h1>
         <p className="mt-5 text-base leading-7 text-body">
-          LearnGuard is a final-year research system for multimodal early screening. It helps a teacher collect classroom evidence, review a screening indicator, and see which signals influenced the result.
+          LearnGuard is a final-year research system for multimodal early screening. It helps a teacher collect screening inputs, review an indicator, and see which signals influenced the result.
         </p>
 
         <section className="mt-14">
           <h2 className="text-2xl font-bold text-heading">Research motivation</h2>
           <p className="mt-3 text-sm leading-7 text-body">
-            Learning difficulties are often noticed late, after a student has already spent terms struggling with reading, writing or sustained classroom tasks. LearnGuard explores whether school-friendly inputs — a short oral reading, a handwriting sample, and structured observations — can surface earlier indicators without claiming a medical diagnosis.
+            Learning difficulties are often noticed late, after a student has already spent terms struggling with reading, writing or attention. LearnGuard explores whether school-friendly inputs — a short oral reading, a handwriting sample, and a caregiver questionnaire — can surface earlier indicators without claiming a medical diagnosis.
           </p>
         </section>
 
@@ -49,7 +49,7 @@ export function AboutPage() {
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-heading">Explainable results</h2>
           <p className="mt-3 text-sm leading-7 text-body">
-            Each screening result lists the signals that influenced it, such as reading rate, spacing or off-task events. SHAP is used for audio and behaviour. Grad-CAM is used for handwriting. These views describe model influence. They do not establish a medical cause, and LearnGuard does not present them as a diagnosis.
+            Each screening result lists the signals that influenced it, such as reading rate, spacing, or caregiver-reported patterns. SHAP is used for audio and the caregiver questionnaire. Grad-CAM is used for handwriting. These views describe model influence. They do not establish a medical cause, and LearnGuard does not present them as a diagnosis.
           </p>
         </section>
 

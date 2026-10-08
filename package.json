@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "adhd-api": "python -m uvicorn app:app --app-dir models/ADHD --host 127.0.0.1 --port 8000"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -1,7 +1,7 @@
 import { endpoints } from "@/config/endpoints";
 import { api, isDemoMode } from "@/lib/api";
 import { GRADES } from "@/lib/constants";
-import { isActionable, levelFromScore, moduleLabel, RISK_LEVELS, screeningStatus } from "@/lib/risk";
+import { isActionable, levelFromScore, moduleConcernLevel, moduleLabel, RISK_LEVELS, screeningStatus } from "@/lib/risk";
 import type { Assessment, RiskLevel, Student } from "@/types";
 import { format, parseISO } from "date-fns";
 
@@ -33,8 +33,8 @@ export function computeAnalytics(students: Student[], assessments: Assessment[])
   const byModule = modules.map((module) => {
     const row = { module: moduleLabel[module], low: 0, moderate: 0, elevated: 0, high: 0 };
     students.forEach((student) => {
-      const result = student.riskProfile[module];
-      if (result) row[result.level] += 1;
+      const level = moduleConcernLevel(student.riskProfile[module]);
+      if (level) row[level] += 1;
     });
     return row;
   });
@@ -60,7 +60,7 @@ export function computeAnalytics(students: Student[], assessments: Assessment[])
     .map(({ month, count }) => ({ month, count }));
   const moduleConcerns = modules.map((module) => ({
     module: moduleLabel[module],
-    count: students.filter((student) => isActionable(student.riskProfile[module]?.level)).length,
+    count: students.filter((student) => isActionable(moduleConcernLevel(student.riskProfile[module]))).length,
   }));
   return {
     students: students.length,

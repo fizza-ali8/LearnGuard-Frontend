@@ -19,7 +19,7 @@ const titles: [string, string][] = [
   ["/dashboard", "Today’s screening overview"],
   ["/students", "Student records"],
   ["/assessment", "New assessment"],
-  ["/behaviour", "Behaviour logs"],
+  ["/behaviour", "Classroom observations"],
   ["/heatmap", "Class heatmap"],
   ["/analytics", "Analytics"],
   ["/history", "Assessment history"],

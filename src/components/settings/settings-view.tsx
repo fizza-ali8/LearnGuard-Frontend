@@ -185,7 +185,7 @@ function NotificationPanel() {
     ["elevated_result", "Elevated screening result", "When a new elevated or high result is saved"],
     ["pending_assessment", "Pending assessment reminders", "When a screening is still open"],
     ["report_generated", "Report generated", "When a screening summary is ready"],
-    ["behaviour_logged", "Behaviour review reminders", "When an observation is saved"],
+    ["behaviour_logged", "Classroom observation saved", "When a teacher observation is saved"],
   ] as const;
   return (
     <Card className="max-w-xl divide-y divide-line">

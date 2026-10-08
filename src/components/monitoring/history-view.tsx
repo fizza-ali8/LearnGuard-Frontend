@@ -5,6 +5,7 @@ import { DataTable, EmptyState, PageHeader, Pagination, SearchBox } from "@/comp
 import { Input, Select } from "@/components/ui/inputs";
 import { RiskBadge } from "@/components/ui/risk";
 import { formatDate } from "@/lib/format";
+import { adhdScreenStatus } from "@/data/adhd-questionnaire";
 import { moduleFullLabel, riskLabel } from "@/lib/risk";
 import { usePreferences } from "@/providers/preferences-provider";
 import { useData } from "@/providers/data-provider";
@@ -51,7 +52,7 @@ export function HistoryView() {
           <option value="all">All types</option>
           <option value="dyslexia">Dyslexia</option>
           <option value="dysgraphia">Dysgraphia</option>
-          <option value="adhd">ADHD-related</option>
+          <option value="adhd">ADHD Caregiver Screening</option>
         </Select>
         <Select aria-label="Risk" value={risk} onChange={(event) => { setRisk(event.target.value); setPage(1); }} className="h-11 w-auto">
           <option value="all">All risk levels</option>
@@ -74,7 +75,7 @@ export function HistoryView() {
               { key: "date", header: "Date", cell: (row: Assessment) => formatDate(row.createdAt, preferences.dateFormat) },
               { key: "student", header: "Student", cell: (row) => students.find((student) => student.id === row.studentId)?.name ?? "Student" },
               { key: "type", header: "Assessment", cell: (row) => moduleFullLabel[row.type as AssessmentType] },
-              { key: "score", header: "Score", cell: (row) => `${row.score}%` },
+              { key: "score", header: "Score", cell: (row) => row.adhdResult ? adhdScreenStatus(row.adhdResult.screenPositive) : `${row.score}%` },
               { key: "risk", header: "Risk", cell: (row) => <RiskBadge level={row.riskLevel} /> },
               { key: "teacher", header: "Teacher", cell: (row) => row.teacher },
               { key: "action", header: "Action", cell: (row) => <Link href={`/results/${row.id}`}><Button variant="secondary" size="sm">View Result</Button></Link> },

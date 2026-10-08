@@ -3,7 +3,7 @@ import { seedAssessments } from "@/data/seed";
 import { api, delay, isDemoMode, isMockApi } from "@/lib/api";
 import { DEMO_FIRST_SCREEN_SCORE, READING_PASSAGES } from "@/lib/constants";
 import { levelFromScore } from "@/lib/risk";
-import { buildAssessment } from "@/lib/screening";
+import { buildAssessment, repairAdhdAssessment } from "@/lib/screening";
 import type { Assessment, CreateAssessmentInput, Student } from "@/types";
 
 const endpointFor = {
@@ -65,10 +65,10 @@ export async function createAssessment(input: CreateAssessmentInput, student: St
       ? student.riskProfile.dyslexia
       : input.type === "dysgraphia"
         ? student.riskProfile.dysgraphia
-        : student.riskProfile.adhd;
+        : undefined;
   const passage = READING_PASSAGES[student.grade] ?? READING_PASSAGES[String(3)];
   const score = input.score ?? existing?.score ?? DEMO_FIRST_SCREEN_SCORE[input.type];
-  return buildAssessment({
+  const assessment = buildAssessment({
     id: `asm-${Date.now()}`,
     studentId: student.id,
     type: input.type,
@@ -82,6 +82,7 @@ export async function createAssessment(input: CreateAssessmentInput, student: St
     inputQuality: input.inputQuality ?? "Good",
     quality: input.quality,
   });
+  return input.type === "adhd" ? repairAdhdAssessment(assessment) : assessment;
 }
 
 export async function getAssessmentById(id: string) {

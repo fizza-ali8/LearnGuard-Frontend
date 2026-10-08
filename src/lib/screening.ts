@@ -1,7 +1,12 @@
+import {
+  ADHD_MODEL_DISCLAIMER,
+  adhdScreenMessage,
+  featureLabel,
+} from "@/data/adhd-questionnaire";
 import { isDemoMode } from "@/lib/api";
 import { MODEL_META, TEACHER } from "@/lib/constants";
 import { levelFromScore } from "@/lib/risk";
-import type { Assessment, AssessmentType, ExplanationFactor, ImageQuality, RiskLevel } from "@/types";
+import type { Assessment, AssessmentType, ExplanationFactor, ImageQuality, RiskLevel, RiskResult } from "@/types";
 
 export function factorsFor(type: AssessmentType, score: number): ExplanationFactor[] {
   if (type === "dyslexia") {
@@ -56,25 +61,25 @@ export function factorsFor(type: AssessmentType, score: number): ExplanationFact
 
   if (score >= 60) {
     return [
-      { label: "Frequent off-task behaviour", impact: "high", direction: "increase", value: 84, detail: "High impact" },
-      { label: "Short sustained-attention periods", impact: "high", direction: "increase", value: 79, detail: "High impact" },
-      { label: "Variable task completion", impact: "moderate", direction: "increase", value: 57, detail: "Moderate impact" },
-      { label: "Instructions repeated", impact: "low", direction: "increase", value: 31, detail: "Smaller additional influence" },
+      { label: "Serious concentration or memory difficulty", impact: "high", detail: "Stronger influence on this screening prediction" },
+      { label: "Works to finish tasks", impact: "high", detail: "Stronger influence on this screening prediction" },
+      { label: "Weeknight sleep duration", impact: "moderate", detail: "Moderate influence on this screening prediction" },
+      { label: "Difficulty making or keeping friends", impact: "low", detail: "Smaller additional influence" },
     ];
   }
   if (score >= 40) {
     return [
-      { label: "Off-task behaviour", impact: "moderate", direction: "increase", value: 56, detail: "Moderate impact" },
-      { label: "Sustained attention", impact: "moderate", direction: "increase", value: 49, detail: "Attention varied across the session" },
-      { label: "Task completion", impact: "low", direction: "increase", value: 33, detail: "Most of the task was finished" },
-      { label: "Restlessness", impact: "low", direction: "increase", value: 28, detail: "Limited influence" },
+      { label: "Works to finish tasks", impact: "moderate", detail: "Moderate influence on this screening prediction" },
+      { label: "School contacts about problems", impact: "moderate", detail: "Moderate influence on this screening prediction" },
+      { label: "Weeknight sleep duration", impact: "low", detail: "Smaller additional influence" },
+      { label: "Non-school screen time", impact: "low", detail: "Smaller additional influence" },
     ];
   }
   return [
-    { label: "Sustained attention", impact: "low", direction: "decrease", value: 18, detail: "Attention was mostly sustained" },
-    { label: "Off-task behaviour", impact: "low", direction: "decrease", value: 14, detail: "Few off-task events" },
-    { label: "Task completion", impact: "low", direction: "decrease", value: 12, detail: "The task was largely completed" },
-    { label: "Restlessness", impact: "low", direction: "decrease", value: 10, detail: "Little restlessness recorded" },
+    { label: "Cares about doing well in school", impact: "low", detail: "Supported a lower screening concern" },
+    { label: "Works to finish tasks", impact: "low", detail: "Supported a lower screening concern" },
+    { label: "Weeknight sleep duration", impact: "low", detail: "Supported a lower screening concern" },
+    { label: "Difficulty making or keeping friends", impact: "low", detail: "Limited influence" },
   ];
 }
 
@@ -98,15 +103,24 @@ export function explanationFor(type: AssessmentType, level: RiskLevel) {
     return "Spacing, character size and baseline alignment stayed within the expected range for this handwriting sample.";
   }
   if (level === "elevated" || level === "high") {
-    return "Frequent off-task behaviour and shorter sustained-attention periods contributed most strongly to the current screening concern.";
+    return "The questionnaire indicates an elevated ADHD-related screening concern. The responses below had the strongest influence on the model prediction. They do not show that any answer caused ADHD.";
   }
   if (level === "moderate") {
-    return "Attention varied across the session and task completion was uneven. These patterns contributed to a moderate screening concern.";
+    return "The questionnaire indicates a moderate ADHD-related screening concern. These caregiver responses had the strongest influence on the model prediction. They do not establish a cause.";
   }
-  return "Sustained attention and task completion were broadly consistent during the recorded observations.";
+  return "The caregiver responses used by the screening model currently sit in a lower concern range. Influence scores describe the prediction. They do not establish a cause.";
 }
 
-export function recommendationFor(level: RiskLevel) {
+export function recommendationFor(level: RiskLevel, type?: AssessmentType) {
+  if (type === "adhd") {
+    if (level === "low") {
+      return "The questionnaire does not indicate an elevated ADHD-related screening concern. Continue regular classroom support, and repeat screening if new concerns appear.";
+    }
+    if (level === "moderate") {
+      return "The questionnaire indicates a moderate ADHD-related screening concern. Continue structured support and review at the next screening point.";
+    }
+    return "The questionnaire indicates an elevated ADHD-related screening concern. Consider discussing persistent concerns with a qualified healthcare or educational professional.";
+  }
   if (level === "low") {
     return "Continue regular classroom support. Repeat screening next term, or sooner if new concerns appear.";
   }
@@ -114,6 +128,92 @@ export function recommendationFor(level: RiskLevel) {
     return "Continue structured classroom observation and review progress at the next screening point.";
   }
   return "Continue structured classroom observation and consider referral to a qualified educational specialist if these concerns persist.";
+}
+
+export function adhdConcernLevel(screenPositive: boolean): RiskLevel {
+  return screenPositive ? "elevated" : "low";
+}
+
+/** Older demonstration records used a percentage. The live model only has two outcomes. */
+export function legacyAdhdScreenPositive(score: number, level?: RiskLevel) {
+  return level === "elevated" || level === "high" || score >= 60;
+}
+
+export function legacyAdhdRisk(score: number, assessedAt?: string, level?: RiskLevel): RiskResult {
+  const screenPositive = legacyAdhdScreenPositive(score, level);
+  return {
+    score: 0,
+    level: adhdConcernLevel(screenPositive),
+    assessedAt,
+    researchScreen: screenPositive ? "elevated_pattern" : "no_elevated_pattern",
+    researchMessage: adhdScreenMessage(screenPositive),
+  };
+}
+
+export function adhdRiskFromAssessment(assessment: Assessment): RiskResult {
+  const screenPositive = Boolean(assessment.adhdResult?.screenPositive);
+  return {
+    score: 0,
+    level: adhdConcernLevel(screenPositive),
+    assessedAt: assessment.createdAt,
+    researchScreen: screenPositive ? "elevated_pattern" : "no_elevated_pattern",
+    researchMessage: assessment.adhdResult?.message,
+  };
+}
+
+/** Turns a percentage-style ADHD record into the same binary screen the live model returns. */
+export function repairAdhdAssessment(assessment: Assessment): Assessment {
+  if (assessment.type !== "adhd") return assessment;
+  if (!assessment.adhdResult) {
+    const screenPositive = legacyAdhdScreenPositive(assessment.score, assessment.riskLevel);
+    const level = adhdConcernLevel(screenPositive);
+    const message = adhdScreenMessage(screenPositive);
+    return {
+      ...assessment,
+      score: 0,
+      riskLevel: level,
+      isDemo: true,
+      explanation: explanationFor("adhd", level),
+      recommendation: recommendationFor(level, "adhd"),
+      modelName: assessment.modelName ?? MODEL_META.adhd.model,
+      modelVersion: "demonstration",
+      explanationMethod: MODEL_META.adhd.method,
+      datasetVersion: MODEL_META.adhd.dataset,
+      adhdResult: {
+        screenPositive,
+        message,
+        disclaimer: ADHD_MODEL_DISCLAIMER,
+        modelVersion: "demonstration",
+        topFactors: assessment.factors.slice(0, 5).map((factor) => ({
+          feature: factor.label,
+          question: featureLabel(factor.label),
+          answer: factor.detail ?? factor.label,
+          direction: screenPositive ? "toward_flag" as const : "away_from_flag" as const,
+        })),
+      },
+    };
+  }
+
+  const level = adhdConcernLevel(assessment.adhdResult.screenPositive);
+  const message = assessment.adhdResult.message;
+  return {
+    ...assessment,
+    score: 0,
+    riskLevel: level,
+    modelName: assessment.modelName ?? MODEL_META.adhd.model,
+    modelVersion: assessment.modelVersion ?? assessment.adhdResult.modelVersion,
+    explanationMethod: assessment.explanationMethod ?? MODEL_META.adhd.method,
+    datasetVersion: assessment.datasetVersion ?? MODEL_META.adhd.dataset,
+    explanation: assessment.explanation === message ? explanationFor("adhd", level) : assessment.explanation,
+    recommendation: !assessment.recommendation || assessment.recommendation === message ? recommendationFor(level, "adhd") : assessment.recommendation,
+    factors: assessment.adhdResult.topFactors.length
+      ? assessment.adhdResult.topFactors.map((factor) => ({
+          label: factor.question || featureLabel(factor.feature),
+          impact: factor.direction === "toward_flag" ? "high" as const : "low" as const,
+          detail: factor.answer,
+        }))
+      : assessment.factors,
+  };
 }
 
 export function buildAssessment(input: {
@@ -144,7 +244,7 @@ export function buildAssessment(input: {
     teacher: input.teacher ?? TEACHER.name,
     explanation: explanationFor(input.type, riskLevel),
     factors: factorsFor(input.type, input.score),
-    recommendation: recommendationFor(riskLevel),
+    recommendation: recommendationFor(riskLevel, input.type),
     inputQuality: input.inputQuality ?? "Good",
     quality: input.quality,
     explanationImageUrl: input.explanationImageUrl,

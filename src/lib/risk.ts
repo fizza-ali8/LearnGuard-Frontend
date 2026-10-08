@@ -25,7 +25,7 @@ export const moduleLabel: Record<AssessmentType, string> = {
 export const moduleFullLabel: Record<AssessmentType, string> = {
   dyslexia: "Dyslexia screening",
   dysgraphia: "Dysgraphia screening",
-  adhd: "ADHD-related screening",
+  adhd: "ADHD-Related Caregiver Screening",
 };
 
 const rank: Record<RiskLevel, number> = {
@@ -49,10 +49,18 @@ export function concernRank(level?: RiskLevel) {
   return level ? rank[level] : -1;
 }
 
+/** ADHD screens are elevated or low. A stored placeholder level must not hide a positive screen. */
+export function moduleConcernLevel(result?: { level: RiskLevel; researchScreen?: "elevated_pattern" | "no_elevated_pattern" }) {
+  if (!result) return undefined;
+  if (result.researchScreen === "elevated_pattern") return "elevated" as const;
+  if (result.researchScreen === "no_elevated_pattern") return "low" as const;
+  return result.level;
+}
+
 export function highestConcern(profile: RiskProfile): RiskLevel | undefined {
-  const levels = [profile.dyslexia?.level, profile.dysgraphia?.level, profile.adhd?.level].filter(
-    (level): level is RiskLevel => Boolean(level),
-  );
+  const levels = [profile.dyslexia, profile.dysgraphia, profile.adhd]
+    .map((result) => moduleConcernLevel(result))
+    .filter((level): level is RiskLevel => Boolean(level));
   if (!levels.length) return undefined;
   return levels.sort((a, b) => rank[b] - rank[a])[0];
 }
@@ -64,19 +72,21 @@ export function overallFromProfile(profile: RiskProfile): { level?: RiskLevel; n
       ["dysgraphia", profile.dysgraphia],
       ["adhd", profile.adhd],
     ] as const
-  ).filter((entry) => entry[1]);
+  ).filter((entry): entry is [(typeof entry)[0], NonNullable<(typeof entry)[1]>] => Boolean(entry[1]));
 
   if (!entries.length) {
     return { note: "No screening results have been recorded yet." };
   }
 
   const top = [...entries].sort((a, b) => {
-    const byLevel = rank[b[1]!.level] - rank[a[1]!.level];
+    const byLevel = rank[moduleConcernLevel(b[1])!] - rank[moduleConcernLevel(a[1])!];
     if (byLevel !== 0) return byLevel;
-    return b[1]!.score - a[1]!.score;
+    const aScore = a[1].researchScreen ? -1 : a[1].score;
+    const bScore = b[1].researchScreen ? -1 : b[1].score;
+    return bScore - aScore;
   })[0];
 
-  const level = top[1]!.level;
+  const level = moduleConcernLevel(top[1])!;
   if (level === "low") {
     return {
       level,
@@ -86,7 +96,7 @@ export function overallFromProfile(profile: RiskProfile): { level?: RiskLevel; n
 
   return {
     level,
-    note: `Current concern is driven primarily by the ${moduleLabel[top[0]].toLowerCase()} screening result.`,
+    note: `Current concern is driven primarily by the ${moduleLabel[top[0]]} screening result.`,
   };
 }
 

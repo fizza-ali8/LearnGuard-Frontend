@@ -1,7 +1,7 @@
 import { scoreObservation } from "@/lib/behaviour-score";
 import { READING_PASSAGES, SCHOOL, TEACHER } from "@/lib/constants";
 import { overallFromProfile } from "@/lib/risk";
-import { buildAssessment } from "@/lib/screening";
+import { buildAssessment, legacyAdhdRisk, repairAdhdAssessment } from "@/lib/screening";
 import type {
   AppNotification,
   Assessment,
@@ -368,9 +368,7 @@ function profileFrom(spec: StudentSpec): RiskProfile {
     dysgraphia: spec.dysgraphia
       ? { score: spec.dysgraphia.score, level: buildAssessment({ id: "tmp", studentId: spec.id, type: "dysgraphia", score: spec.dysgraphia.score, createdAt: spec.dysgraphia.at }).riskLevel, assessedAt: spec.dysgraphia.at }
       : undefined,
-    adhd: spec.adhd
-      ? { score: spec.adhd.score, level: buildAssessment({ id: "tmp", studentId: spec.id, type: "adhd", score: spec.adhd.score, createdAt: spec.adhd.at }).riskLevel, assessedAt: spec.adhd.at }
-      : undefined,
+    adhd: spec.adhd ? legacyAdhdRisk(spec.adhd.score, spec.adhd.at) : undefined,
   };
   const overall = overallFromProfile(riskProfile);
   return { ...riskProfile, overallConcern: overall.level, overallNote: overall.note };
@@ -396,7 +394,7 @@ export const seedStudents: Student[] = specs.map((spec) => ({
 function moduleAssessment(spec: StudentSpec, type: AssessmentType, point?: ModulePoint): Assessment | undefined {
   if (!point) return undefined;
   const passage = READING_PASSAGES[spec.grade];
-  return buildAssessment({
+  const assessment = buildAssessment({
     id: `asm-${spec.id}-${type}`,
     studentId: spec.id,
     type,
@@ -408,6 +406,7 @@ function moduleAssessment(spec: StudentSpec, type: AssessmentType, point?: Modul
     transcriptAvailable: type === "dyslexia" ? point.score >= 60 : undefined,
     inputQuality: point.score >= 80 ? "Fair" : "Good",
   });
+  return type === "adhd" ? repairAdhdAssessment(assessment) : assessment;
 }
 
 const historyPoints: { id: string; studentId: string; type: AssessmentType; score: number; at: string }[] = [
@@ -440,7 +439,7 @@ export const seedAssessments: Assessment[] = [
   ...historyPoints.map((point) => {
     const student = specs.find((item) => item.id === point.studentId);
     const passage = READING_PASSAGES[student?.grade ?? "4"];
-    return buildAssessment({
+    const assessment = buildAssessment({
       id: point.id,
       studentId: point.studentId,
       type: point.type,
@@ -451,6 +450,7 @@ export const seedAssessments: Assessment[] = [
       passage: point.type === "dyslexia" ? passage.text : undefined,
       transcriptAvailable: point.type === "dyslexia",
     });
+    return point.type === "adhd" ? repairAdhdAssessment(assessment) : assessment;
   }),
 ];
 

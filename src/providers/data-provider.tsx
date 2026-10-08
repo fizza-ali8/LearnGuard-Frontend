@@ -8,7 +8,10 @@ import {
   seedStudents,
 } from "@/data/seed";
 import { overallFromProfile } from "@/lib/risk";
+import { adhdRiskFromAssessment, legacyAdhdRisk, repairAdhdAssessment } from "@/lib/screening";
 import { createAssessment } from "@/services/assessments";
+import type { AdhdQuestion } from "@/data/adhd-questionnaire";
+import { predictAdhd, type AdhdSubmission } from "@/services/adhd";
 import { saveBehaviourObservation } from "@/services/behaviour";
 import { generateReport } from "@/services/reports";
 import { createStudent } from "@/services/students";
@@ -45,6 +48,7 @@ interface DataContextValue extends StoreState {
   deleteStudent: (id: string) => void;
   restoreDemo: () => void;
   runAssessment: (input: CreateAssessmentInput) => Promise<Assessment>;
+  submitAdhdScreening: (input: AdhdSubmission, questions?: AdhdQuestion[]) => Promise<Assessment>;
   saveObservation: (draft: ObservationDraft) => Promise<BehaviourObservation>;
   createReport: (studentId: string) => Promise<Report>;
   markNotificationRead: (id: string) => void;
@@ -64,15 +68,35 @@ function seedState(): StoreState {
   };
 }
 
+function reconcileStore(state: StoreState): StoreState {
+  const assessments = state.assessments.map(repairAdhdAssessment);
+  const students = state.students.map((student) => {
+    const latest = assessments
+      .filter((item) => item.studentId === student.id && item.type === "adhd" && item.adhdResult)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+    const adhd = latest?.adhdResult
+      ? adhdRiskFromAssessment(latest)
+      : student.riskProfile.adhd && !student.riskProfile.adhd.researchScreen
+        ? legacyAdhdRisk(student.riskProfile.adhd.score, student.riskProfile.adhd.assessedAt, student.riskProfile.adhd.level)
+        : student.riskProfile.adhd;
+    const riskProfile = { ...student.riskProfile, adhd };
+    const overall = overallFromProfile(riskProfile);
+    return { ...student, riskProfile: { ...riskProfile, overallConcern: overall.level, overallNote: overall.note } };
+  });
+  return { ...state, assessments, students };
+}
+
 function applyAssessment(student: Student, assessment: Assessment): Student {
   const riskProfile = {
     ...student.riskProfile,
-    [assessment.type]: {
-      score: assessment.score,
-      level: assessment.riskLevel,
-      assessedAt: assessment.createdAt,
-      confidence: assessment.confidence,
-    },
+    [assessment.type]: assessment.type === "adhd" && assessment.adhdResult
+      ? adhdRiskFromAssessment(assessment)
+      : {
+          score: assessment.score,
+          level: assessment.riskLevel,
+          assessedAt: assessment.createdAt,
+          confidence: assessment.confidence,
+        },
   };
   const overall = overallFromProfile(riskProfile);
   return {
@@ -83,7 +107,7 @@ function applyAssessment(student: Student, assessment: Assessment): Student {
 }
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<StoreState>(seedState);
+  const [state, setState] = useState<StoreState>(() => reconcileStore(seedState()));
   const [ready, setReady] = useState(false);
   const [classScope, setClassScope] = useState("all");
 
@@ -94,16 +118,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       try {
         const parsed = JSON.parse(saved) as StoreState;
         if (Array.isArray(parsed.students) && Array.isArray(parsed.assessments)) {
-          setState({
+          setState(reconcileStore({
             students: parsed.students,
             assessments: parsed.assessments,
             observations: parsed.observations ?? [],
             reports: parsed.reports ?? [],
             notifications: parsed.notifications ?? [],
-          });
+          }));
         }
       } catch {
-        setState(seedState());
+        setState(reconcileStore(seedState()));
       }
     }
     setReady(true);
@@ -151,8 +175,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ? "Dyslexia assessment completed"
             : assessment.type === "dysgraphia"
               ? "Handwriting screening completed"
-              : "Behaviour screening updated",
-        detail: assessment.explanation,
+              : "ADHD caregiver screening completed",
+        detail: assessment.adhdResult?.message ?? assessment.explanation,
         riskLevel: assessment.riskLevel,
         createdAt: assessment.createdAt,
         href: `/results/${assessment.id}`,
@@ -161,7 +185,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         id: observation.id,
         studentId: observation.studentId,
         studentName: studentName(observation.studentId),
-        title: "Behaviour observation added",
+        title: "Classroom observation added",
         detail: `${observation.subject} · ${observation.durationMin} min`,
         riskLevel: observation.riskLevel,
         createdAt: `${observation.date}T09:00:00`,
@@ -195,7 +219,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
       restoreDemo() {
         localStorage.removeItem(KEY);
-        setState(seedState());
+        setState(reconcileStore(seedState()));
       },
       async runAssessment(input) {
         const student = state.students.find((item) => item.id === input.studentId);
@@ -213,6 +237,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                     kind: "elevated_result" as const,
                     title: "Elevated screening result",
                     body: `${student.name} has a new ${assessment.riskLevel} screening result.`,
+                    createdAt: assessment.createdAt,
+                    href: `/results/${assessment.id}`,
+                    read: false,
+                  },
+                  ...current.notifications,
+                ]
+              : current.notifications,
+        }));
+        return assessment;
+      },
+      async submitAdhdScreening(input, questions) {
+        const student = state.students.find((item) => item.id === input.studentId);
+        if (!student) throw new Error("Student not found");
+        const assessment = await predictAdhd(input, student, questions);
+        setState((current) => ({
+          ...current,
+          assessments: [assessment, ...current.assessments],
+          students: current.students.map((item) => (item.id === student.id ? applyAssessment(item, assessment) : item)),
+          notifications:
+            assessment.adhdResult?.screenPositive
+              ? [
+                  {
+                    id: `ntf-${Date.now()}`,
+                    kind: "elevated_result" as const,
+                    title: "Elevated ADHD-related screening pattern",
+                    body: `${student.name}: ${assessment.adhdResult.message}`,
                     createdAt: assessment.createdAt,
                     href: `/results/${assessment.id}`,
                     read: false,

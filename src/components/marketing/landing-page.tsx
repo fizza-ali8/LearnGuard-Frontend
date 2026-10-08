@@ -9,7 +9,7 @@ import { BookOpen, Eye, LockKeyhole, Mic, PenLine, ShieldCheck, Sparkles } from 
 import Link from "next/link";
 
 const steps = [
-  { n: "01", title: "Collect", body: "Audio, handwriting and classroom observations." },
+  { n: "01", title: "Collect", body: "Audio, handwriting and a caregiver questionnaire." },
   { n: "02", title: "Analyze", body: "Specialized screening models process each input." },
   { n: "03", title: "Support", body: "Teachers receive risk insights, explanations and next-step guidance." },
 ];
@@ -30,8 +30,8 @@ const modules = [
   {
     icon: Eye,
     title: "ADHD-Related Screening",
-    kicker: "Behavioural Observation",
-    body: "Track sustained attention and classroom behaviour across multiple observations.",
+    kicker: "Caregiver Questionnaire",
+    body: "Uses caregiver-reported information about attention, school functioning, social behaviour, sleep, routines and activities.",
   },
 ];
 

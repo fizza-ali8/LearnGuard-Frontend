@@ -1,0 +1,543 @@
+{
+  "module": "adhd",
+  "title": "LearnGuard ADHD — Caregiver Questionnaire",
+  "audience": "Parent or adult caregiver familiar with the child",
+  "age_range_years": [
+    6,
+    11
+  ],
+  "source": "NSCH 2022 T2 questionnaire; mappings verified against the saved LearnGuard ADHD model schema",
+  "instructions": "Select exactly one answer for every question. Answer based on the child’s usual behavior or the period stated. Do not guess when an answer is unknown; the current API requires all answers and does not accept an Unknown option.",
+  "screening_disclaimer": "This questionnaire supports an ADHD-related research screening model. It is not an ADHD diagnosis or a replacement for professional assessment.",
+  "api": {
+    "method": "POST",
+    "path": "/api/adhd/predict",
+    "payload_key": "answers",
+    "payload_values": "Integer codes from the selected options",
+    "question_endpoint": "GET /api/adhd/questions"
+  },
+  "questions": [
+    {
+      "number": 1,
+      "feature_key": "sc_age_years",
+      "section": "Child information",
+      "question": "How old is your child (in completed years)?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "6 years",
+          "value": 6
+        },
+        {
+          "label": "7 years",
+          "value": 7
+        },
+        {
+          "label": "8 years",
+          "value": 8
+        },
+        {
+          "label": "9 years",
+          "value": 9
+        },
+        {
+          "label": "10 years",
+          "value": 10
+        },
+        {
+          "label": "11 years",
+          "value": 11
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "feature_key": "memorycond",
+      "section": "Attention and behavior",
+      "question": "Does this child have serious difficulty concentrating, remembering, or making decisions because of a physical, mental, or emotional condition?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Yes",
+          "value": 1
+        },
+        {
+          "label": "No",
+          "value": 2
+        }
+      ],
+      "help_text": "This is about serious difficulty related to a physical, mental, or emotional condition, not occasional distraction."
+    },
+    {
+      "number": 3,
+      "feature_key": "k7q70_r",
+      "section": "Attention and behavior",
+      "question": "How often does this child argue too much?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Always",
+          "value": 1
+        },
+        {
+          "label": "Usually",
+          "value": 2
+        },
+        {
+          "label": "Sometimes",
+          "value": 3
+        },
+        {
+          "label": "Never",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "feature_key": "k7q82_r",
+      "section": "School and task completion",
+      "question": "How often does this child care about doing well in school?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Always",
+          "value": 1
+        },
+        {
+          "label": "Usually",
+          "value": 2
+        },
+        {
+          "label": "Sometimes",
+          "value": 3
+        },
+        {
+          "label": "Never",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "feature_key": "k7q83_r",
+      "section": "School and task completion",
+      "question": "How often does this child do all required homework?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Always",
+          "value": 1
+        },
+        {
+          "label": "Usually",
+          "value": 2
+        },
+        {
+          "label": "Sometimes",
+          "value": 3
+        },
+        {
+          "label": "Never",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "feature_key": "k7q84_r",
+      "section": "School and task completion",
+      "question": "How often does this child work to finish tasks they start?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Always",
+          "value": 1
+        },
+        {
+          "label": "Usually",
+          "value": 2
+        },
+        {
+          "label": "Sometimes",
+          "value": 3
+        },
+        {
+          "label": "Never",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "feature_key": "k7q85_r",
+      "section": "Attention and behavior",
+      "question": "How often does this child stay calm and in control when faced with a challenge?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Always",
+          "value": 1
+        },
+        {
+          "label": "Usually",
+          "value": 2
+        },
+        {
+          "label": "Sometimes",
+          "value": 3
+        },
+        {
+          "label": "Never",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "feature_key": "grades",
+      "section": "School and task completion",
+      "question": "Across all subjects, what grades did this child get during the school year?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Mostly A's",
+          "value": 1
+        },
+        {
+          "label": "Mostly A's and B's",
+          "value": 2
+        },
+        {
+          "label": "Mostly B's and C's",
+          "value": 3
+        },
+        {
+          "label": "Mostly C's and D's",
+          "value": 4
+        },
+        {
+          "label": "Mostly D's or lower",
+          "value": 5
+        },
+        {
+          "label": "School does not give these grades",
+          "value": 6
+        }
+      ],
+      "help_text": "Use the most recently completed school year. If the school does not use letter grades, choose the matching option."
+    },
+    {
+      "number": 9,
+      "feature_key": "k7q04r_r",
+      "section": "School and task completion",
+      "question": "During the past 12 months, how many times has the child’s school contacted the household about problems the child is having with school?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "None",
+          "value": 1
+        },
+        {
+          "label": "1 time",
+          "value": 2
+        },
+        {
+          "label": "2 or more times",
+          "value": 3
+        }
+      ],
+      "help_text": "This is about problems raised by the school, not routine parent-teacher communication."
+    },
+    {
+      "number": 10,
+      "feature_key": "makefriend",
+      "section": "Social behavior",
+      "question": "Compared with other children their age, how much difficulty does this child have making or keeping friends?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "No difficulty",
+          "value": 1
+        },
+        {
+          "label": "A little difficulty",
+          "value": 2
+        },
+        {
+          "label": "A lot of difficulty",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "feature_key": "hoursleep",
+      "section": "Sleep and daily routine",
+      "question": "During the past week, how many hours of sleep did this child get on most weeknights?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Less than 6 hours",
+          "value": 1
+        },
+        {
+          "label": "6 hours",
+          "value": 2
+        },
+        {
+          "label": "7 hours",
+          "value": 3
+        },
+        {
+          "label": "8 hours",
+          "value": 4
+        },
+        {
+          "label": "9 hours",
+          "value": 5
+        },
+        {
+          "label": "10 hours",
+          "value": 6
+        },
+        {
+          "label": "11 or more hours",
+          "value": 7
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "feature_key": "bedtime",
+      "section": "Sleep and daily routine",
+      "question": "How often does this child go to bed at about the same time on weeknights?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Always",
+          "value": 1
+        },
+        {
+          "label": "Usually",
+          "value": 2
+        },
+        {
+          "label": "Sometimes",
+          "value": 3
+        },
+        {
+          "label": "Rarely",
+          "value": 4
+        },
+        {
+          "label": "Never",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "feature_key": "screentime",
+      "section": "Sleep and daily routine",
+      "question": "On most weekdays, about how much non-school screen time does this child have?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Less than 1 hour",
+          "value": 1
+        },
+        {
+          "label": "1 hour",
+          "value": 2
+        },
+        {
+          "label": "2 hours",
+          "value": 3
+        },
+        {
+          "label": "3 hours",
+          "value": 4
+        },
+        {
+          "label": "4 or more hours",
+          "value": 5
+        }
+      ],
+      "help_text": "Do not include time spent on schoolwork."
+    },
+    {
+      "number": 14,
+      "feature_key": "bully",
+      "section": "Social behavior",
+      "question": "During the past 12 months, how often did this child bully, pick on, or exclude other children?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Never",
+          "value": 1
+        },
+        {
+          "label": "1–2 times in the past 12 months",
+          "value": 2
+        },
+        {
+          "label": "1–2 times per month",
+          "value": 3
+        },
+        {
+          "label": "1–2 times per week",
+          "value": 4
+        },
+        {
+          "label": "Almost every day",
+          "value": 5
+        }
+      ],
+      "help_text": "Do not include siblings. If the frequency changed during the year, choose the highest frequency."
+    },
+    {
+      "number": 15,
+      "feature_key": "bullied_r",
+      "section": "Social behavior",
+      "question": "During the past 12 months, how often was this child bullied, picked on, or excluded by other children?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Never",
+          "value": 1
+        },
+        {
+          "label": "1–2 times in the past 12 months",
+          "value": 2
+        },
+        {
+          "label": "1–2 times per month",
+          "value": 3
+        },
+        {
+          "label": "1–2 times per week",
+          "value": 4
+        },
+        {
+          "label": "Almost every day",
+          "value": 5
+        }
+      ],
+      "help_text": "Do not include siblings. If the frequency changed during the year, choose the highest frequency."
+    },
+    {
+      "number": 16,
+      "feature_key": "physactiv",
+      "section": "Activities",
+      "question": "During the past week, on how many days did this child exercise, play a sport, or do at least 60 minutes of physical activity?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "0 days",
+          "value": 1
+        },
+        {
+          "label": "1–3 days",
+          "value": 2
+        },
+        {
+          "label": "4–6 days",
+          "value": 3
+        },
+        {
+          "label": "Every day",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "feature_key": "repeated",
+      "section": "School and task completion",
+      "question": "Since starting kindergarten, has this child repeated any grades?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Yes",
+          "value": 1
+        },
+        {
+          "label": "No",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "feature_key": "k7q30",
+      "section": "Activities",
+      "question": "During the past 12 months, did this child participate in a sports team or take sports lessons after school or on weekends?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Yes",
+          "value": 1
+        },
+        {
+          "label": "No",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "feature_key": "k7q31",
+      "section": "Activities",
+      "question": "During the past 12 months, did this child participate in any clubs or organizations after school or on weekends?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Yes",
+          "value": 1
+        },
+        {
+          "label": "No",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "feature_key": "k7q32",
+      "section": "Activities",
+      "question": "During the past 12 months, did this child participate in other organized activities or lessons such as music, dance, language, or arts?",
+      "input_type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "label": "Yes",
+          "value": 1
+        },
+        {
+          "label": "No",
+          "value": 2
+        }
+      ]
+    }
+  ]
+}

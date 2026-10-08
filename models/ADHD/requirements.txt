@@ -1,0 +1,5 @@
+fastapi>=0.110,<1
+uvicorn>=0.29,<1
+catboost>=1.2.8,<2
+pandas>=2.1,<3
+numpy>=1.26,<3

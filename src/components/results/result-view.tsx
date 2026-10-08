@@ -6,6 +6,7 @@ import { Accordion, Breadcrumb, Card, DemoBadge, ErrorState, PageHeader, Tabs } 
 import { RiskBadge, RiskBar, RiskGauge } from "@/components/ui/risk";
 import { PRODUCT } from "@/lib/constants";
 import { formatDate, formatDuration } from "@/lib/format";
+import { adhdScreenStatus, featureLabel } from "@/data/adhd-questionnaire";
 import { moduleFullLabel } from "@/lib/risk";
 import { usePreferences } from "@/providers/preferences-provider";
 import { useData } from "@/providers/data-provider";
@@ -37,31 +38,61 @@ export function ResultView({ assessmentId }: { assessmentId: string }) {
       />
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-heading text-5xl font-bold text-heading">{assessment.score}%</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <RiskBadge level={assessment.riskLevel} phrase />
-            {assessment.isDemo ? <DemoBadge /> : null}
-          </div>
-          {assessment.isDemo ? <p className="mt-2 text-xs text-faint">Generated locally for interface testing.</p> : null}
-          <p className="mt-3 max-w-xl text-sm text-muted">{PRODUCT.resultDisclaimer}</p>
+          {assessment.adhdResult ? (
+            <>
+              <p className="max-w-2xl text-3xl font-bold text-heading">{adhdScreenStatus(assessment.adhdResult.screenPositive)}</p>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-body">{assessment.adhdResult.message}</p>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted">{assessment.adhdResult.disclaimer}</p>
+              {assessment.isDemo ? <p className="mt-3 max-w-xl text-xs leading-5 text-faint">Demonstration record. A new questionnaire uses the saved screening model.</p> : null}
+            </>
+          ) : (
+            <>
+              <p className="font-heading text-5xl font-bold text-heading">{assessment.score}%</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <RiskBadge level={assessment.riskLevel} phrase />
+                {assessment.isDemo ? <DemoBadge /> : null}
+              </div>
+              {assessment.isDemo ? <p className="mt-2 text-xs text-faint">Generated locally for interface testing.</p> : null}
+              <p className="mt-3 max-w-xl text-sm text-muted">{PRODUCT.resultDisclaimer}</p>
+            </>
+          )}
         </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
+        {assessment.adhdResult ? (
+          <Card>
+            <h2 className="text-base font-semibold text-heading">Screening status</h2>
+            <p className="mt-3 text-sm font-semibold text-heading">{adhdScreenStatus(assessment.adhdResult.screenPositive)}</p>
+            <p className="mt-2 text-sm leading-6 text-body">{assessment.adhdResult.message}</p>
+            <p className="mt-3 text-xs text-faint">Source: Caregiver questionnaire{assessment.respondentRelationship ? ` · ${assessment.respondentRelationship}` : ""}</p>
+            <p className="mt-1 text-xs text-faint">{student.name}</p>
+          </Card>
+        ) : (
         <Card className="flex flex-col items-center">
           <h2 className="mb-2 self-start text-base font-semibold text-heading">Risk Summary</h2>
           <RiskGauge value={assessment.score} level={assessment.riskLevel} />
           <p className="mt-2 text-sm text-muted">{student.name}</p>
           {assessment.audioDurationSec ? <p className="text-xs text-faint">Audio {formatDuration(assessment.audioDurationSec)}</p> : null}
         </Card>
+        )}
         <Card>
-          <h2 className="text-base font-semibold text-heading">Contributing Signals</h2>
+          <h2 className="text-base font-semibold text-heading">{assessment.adhdResult ? "Responses with the strongest influence" : "Contributing Signals"}</h2>
+          {assessment.adhdResult ? <p className="mt-2 text-xs leading-5 text-faint">These responses had the strongest association with the model output. They do not show that an answer caused ADHD.</p> : null}
           <div className="mt-4 space-y-4">
-            {assessment.factors.map((factor) => (
+            {assessment.adhdResult
+              ? assessment.adhdResult.topFactors.map((factor) => (
+                  <div key={factor.feature}>
+                    <p className="text-sm font-medium text-heading">{factor.question}</p>
+                    <p className="text-sm text-body">{factor.answer}</p>
+                    <p className="mt-1 text-xs text-faint">{factor.direction === "toward_flag" ? "Associated with the elevated pattern in this model." : "Associated with moving away from the elevated pattern."}</p>
+                  </div>
+                ))
+              : assessment.factors.map((factor) => (
               <div key={factor.label}>
                 <div className="mb-1 flex items-center justify-between text-sm">
-                  <span className="text-heading">{factor.label}</span>
-                  <span className="text-muted capitalize">{factor.impact} contribution</span>
+                  <span className="text-heading">{assessment.type === "adhd" ? featureLabel(factor.label) : factor.label}</span>
+                  <span className="text-muted capitalize">{factor.impact} {assessment.type === "adhd" ? "influence" : "contribution"}</span>
                 </div>
                 {typeof factor.value === "number" ? <RiskBar value={factor.value} level={factor.impact === "high" ? "elevated" : factor.impact === "moderate" ? "moderate" : "low"} /> : null}
                 {factor.detail ? <p className="mt-1 text-xs text-faint">{factor.detail}</p> : null}
@@ -133,8 +164,6 @@ export function ResultView({ assessmentId }: { assessmentId: string }) {
         </Card>
       ) : null}
 
-      {assessment.type === "adhd" ? <AdhdTrends studentId={student.id} /> : null}
-
       <Card className="mt-4">
         <h2 className="text-base font-semibold text-heading">Why did LearnGuard flag this result?</h2>
         <p className="mt-3 text-sm leading-7 text-body">{assessment.explanation}</p>
@@ -151,6 +180,13 @@ export function ResultView({ assessmentId }: { assessmentId: string }) {
                 <dl className="grid gap-2 sm:grid-cols-2">
                   {assessment.modelName ? <div><dt className="text-muted">Model</dt><dd>{assessment.modelName}{assessment.isDemo ? " (demo label)" : ""}</dd></div> : null}
                   {assessment.modelVersion ? <div><dt className="text-muted">Model version</dt><dd>{assessment.modelVersion}</dd></div> : null}
+                  {typeof assessment.adhdResult?.modelScore === "number" ? (
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted">Research model score</dt>
+                      <dd>{assessment.adhdResult.modelScore.toFixed(5)}</dd>
+                      <p className="mt-1 text-xs leading-5 text-faint">This is the model output compared with the research threshold. It is not the probability that the child has ADHD.</p>
+                    </div>
+                  ) : null}
                   {typeof assessment.confidence === "number" ? <div><dt className="text-muted">Prediction confidence</dt><dd>{assessment.confidence.toFixed(2)}</dd></div> : null}
                   {assessment.inputQuality ? <div><dt className="text-muted">Input quality</dt><dd>{assessment.inputQuality}</dd></div> : null}
                   {assessment.explanationMethod ? <div><dt className="text-muted">Explanation method</dt><dd>{assessment.isDemo && assessment.type === "dysgraphia" && !assessment.explanationImageUrl ? "Example visualization" : assessment.explanationMethod}</dd></div> : null}
@@ -207,37 +243,3 @@ function HandwritingPanel({
   );
 }
 
-function AdhdTrends({ studentId }: { studentId: string }) {
-  const { observations } = useData();
-  const rows = observations.filter((item) => item.studentId === studentId).slice(0, 6).reverse();
-  if (rows.length === 0) return null;
-  if (rows.length === 1) {
-    return <p className="mt-4 text-sm text-muted">One observation is recorded. A trend appears after a second session. This chart shows screening history only.</p>;
-  }
-  return (
-    <div className="mt-4 grid gap-4 lg:grid-cols-3">
-      <Trend title="Attention Duration Over Time" rows={rows.map((item) => ({ label: item.date.slice(5), value: item.sustainedAttentionMin }))} />
-      <Trend title="Off-Task Events Over Time" rows={rows.map((item) => ({ label: item.date.slice(5), value: item.offTaskEvents }))} />
-      <Trend title="Task Completion Over Time" rows={rows.map((item) => ({ label: item.date.slice(5), value: item.taskCompletionPct }))} />
-    </div>
-  );
-}
-
-function Trend({ title, rows }: { title: string; rows: { label: string; value: number }[] }) {
-  return (
-    <Card>
-      <h3 className="text-sm font-semibold text-heading">{title}</h3>
-      <div className="mt-4 space-y-2">
-        {rows.map((row) => (
-          <div key={row.label} className="flex items-center gap-2 text-xs">
-            <span className="w-12 text-muted">{row.label}</span>
-            <div className="h-2 flex-1 rounded-full bg-soft">
-              <div className="h-full rounded-full bg-[#7C8AA5]" style={{ width: `${Math.min(100, row.value)}%` }} />
-            </div>
-            <span className="w-8 text-right text-heading">{row.value}</span>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}

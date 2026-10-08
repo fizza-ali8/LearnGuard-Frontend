@@ -44,15 +44,36 @@ export const helpArticles: HelpArticle[] = [
       "Highlighted regions show areas that influenced the model’s screening output. They do not prove a handwriting difficulty and should be read together with the factor list.",
   },
   {
-    id: "beh-1",
-    category: "Recording Behaviour",
-    question: "How many behaviour observations are recommended?",
+    id: "adhd-1",
+    category: "ADHD Caregiver Questionnaire",
+    question: "Who should complete the ADHD questionnaire?",
     answer:
-      "Record at least three observations, on different days and tasks, before treating an ADHD-related screening result as stable. One session can be saved, but repeated notes give a fairer picture of attention and task completion.",
+      "A parent or adult caregiver who knows the child's usual behaviour. It is not a teacher observation form. The current model is validated for children aged 6–11.",
   },
   {
-    id: "beh-2",
-    category: "Recording Behaviour",
+    id: "adhd-2",
+    category: "ADHD Caregiver Questionnaire",
+    question: "Why is every question required?",
+    answer:
+      "The screening model expects one response for each of the 20 items. An unanswered question is not treated as No or Never. If you are unsure, save the draft and return after confirming the information.",
+  },
+  {
+    id: "adhd-3",
+    category: "ADHD Caregiver Questionnaire",
+    question: "What does the result mean?",
+    answer:
+      "The result says whether the caregiver answers match an elevated ADHD-related pattern in the study data. It is not a percentage score and it is not a clinical diagnosis. Discuss persistent concerns with a qualified healthcare or educational professional.",
+  },
+  {
+    id: "obs-1",
+    category: "Classroom Observations",
+    question: "Are classroom observations part of the ADHD model?",
+    answer:
+      "No. Teacher observations track attention, off-task events and task completion over time. They are kept separate from the caregiver questionnaire and are not sent to the current ADHD screening model.",
+  },
+  {
+    id: "obs-2",
+    category: "Classroom Observations",
     question: "What language should I use in teacher notes?",
     answer:
       "Describe what you saw: how long the student stayed with the task, how often prompting was needed, and whether the work was finished. Avoid diagnostic labels in the notes.",

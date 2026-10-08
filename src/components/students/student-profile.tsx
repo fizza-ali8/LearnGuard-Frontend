@@ -8,6 +8,7 @@ import { RiskBadge, RiskBar } from "@/components/ui/risk";
 import { formatDate } from "@/lib/format";
 import { moduleFullLabel, moduleLabel, OVERALL_CONCERN_NOTE } from "@/lib/risk";
 import { copyText } from "@/lib/utils";
+import { adhdDraftKey, adhdScreenStatus, answeredCount, isAdhdEligible, type AdhdAnswers } from "@/data/adhd-questionnaire";
 import { usePreferences } from "@/providers/preferences-provider";
 import { useStudent } from "@/hooks/use-student";
 import type { AssessmentType } from "@/types";
@@ -15,7 +16,7 @@ import { Copy, FileText } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const TimelineChart = dynamic(
@@ -31,6 +32,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
   const { preferences } = usePreferences();
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [draftCount, setDraftCount] = useState<number | null>(null);
   const [timeline, setTimeline] = useState<AssessmentType>("dyslexia");
 
   const tabs = [
@@ -38,13 +40,28 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
     { href: `/students/${studentId}/assessments`, label: "Assessments", active: section === "assessments" },
     { href: `/students/${studentId}/timeline`, label: "Timeline", active: section === "timeline" },
     { href: `/students/${studentId}/explanations`, label: "Explanations", active: section === "explanations" },
-    { href: `/students/${studentId}/behaviour`, label: "Behaviour", active: section === "behaviour" },
+    { href: `/students/${studentId}/behaviour`, label: "Observations", active: section === "behaviour" },
     { href: `/students/${studentId}/reports`, label: "Reports", active: section === "reports" },
   ];
 
+  useEffect(() => {
+    const saved = localStorage.getItem(adhdDraftKey(studentId));
+    if (!saved) {
+      setDraftCount(null);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(saved) as { answers?: AdhdAnswers };
+      const count = answeredCount(parsed.answers ?? {});
+      setDraftCount(count > 0 ? count : null);
+    } catch {
+      setDraftCount(null);
+    }
+  }, [studentId]);
+
   const chartData = useMemo(() => {
     return assessments
-      .filter((item) => item.type === timeline)
+      .filter((item) => item.type === timeline && timeline !== "adhd")
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map((item) => ({ label: format(parseISO(item.createdAt), "MMM"), score: item.score }));
   }, [assessments, timeline]);
@@ -89,7 +106,8 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               items={[
                 { label: "Dyslexia screening", href: `/assessment/dyslexia/${student.id}` },
                 { label: "Dysgraphia screening", href: `/assessment/dysgraphia/${student.id}` },
-                { label: "Log behaviour", href: `/assessment/adhd/${student.id}` },
+                { label: "ADHD caregiver screening", href: `/assessment/adhd/${student.id}` },
+                { label: "Log classroom observation", href: `/behaviour/log/${student.id}` },
                 { label: "Delete student", destructive: true, onClick: () => setConfirmDelete(true) },
               ]}
             />
@@ -130,13 +148,35 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
         </div>
       </Card>
 
+      {draftCount ? (
+        <Card className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-heading">ADHD Caregiver Questionnaire</p>
+            <p className="text-xs text-muted">Draft · {draftCount} / 20 answered</p>
+          </div>
+          <Link href={`/assessment/adhd/${student.id}`}><Button size="sm">Resume</Button></Link>
+        </Card>
+      ) : null}
+
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         {modules.map((type) => {
           const result = student.riskProfile[type];
+          const adhdBlocked = type === "adhd" && !isAdhdEligible(student.age);
           return (
             <Card key={type}>
-              <p className="text-sm font-semibold text-heading">{moduleLabel[type]}</p>
-              {result ? (
+              <p className="text-sm font-semibold text-heading">{type === "adhd" ? "ADHD-Related Screening" : moduleLabel[type]}</p>
+              {adhdBlocked && !result ? (
+                <p className="mt-4 text-sm text-muted">Not available. This screening model is currently validated for children aged 6–11.</p>
+              ) : result?.researchScreen ? (
+                <>
+                  <p className="mt-3 text-sm font-semibold leading-6 text-heading">{result.researchScreen === "elevated_pattern" ? adhdScreenStatus(true) : adhdScreenStatus(false)}</p>
+                  {result.researchMessage ? <p className="mt-2 text-sm leading-6 text-muted">{result.researchMessage}</p> : null}
+                  <p className="mt-3 text-xs text-muted">Completed: {result.assessedAt ? formatDate(result.assessedAt, preferences.dateFormat) : "—"}</p>
+                  <p className="mt-1 text-xs text-muted">Source: Caregiver questionnaire</p>
+                  <p className="mt-2 text-xs leading-5 text-faint">Research prototype. Not a diagnosis or a replacement for professional assessment.</p>
+                  <Link href={`/students/${student.id}/assessments`} className="mt-3 inline-flex text-sm font-medium text-primary-dark">View details</Link>
+                </>
+              ) : result ? (
                 <>
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <p className="font-heading text-3xl font-bold text-heading">{result.score}%</p>
@@ -145,7 +185,8 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                   <div className="mt-3">
                     <RiskBar value={result.score} level={result.level} />
                   </div>
-                  <p className="mt-3 text-xs text-muted">Last screened: {result.assessedAt ? formatDate(result.assessedAt, preferences.dateFormat) : "—"}</p>
+                  <p className="mt-3 text-xs text-muted">{type === "adhd" ? "Completed" : "Last screened"}: {result.assessedAt ? formatDate(result.assessedAt, preferences.dateFormat) : "—"}</p>
+                  {type === "adhd" ? <p className="mt-1 text-xs text-muted">Source: Caregiver questionnaire</p> : null}
                   <Link href={`/students/${student.id}/assessments`} className="mt-3 inline-flex text-sm font-medium text-primary-dark">
                     View details
                   </Link>
@@ -170,6 +211,9 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               <div className="mt-4 space-y-4">
                 {modules.map((type) => {
                   const result = student.riskProfile[type];
+                  if (result?.researchScreen) {
+                    return <p key={type} className="text-sm text-body"><span className="font-medium text-heading">{moduleLabel[type]}. </span>{result.researchScreen === "elevated_pattern" ? adhdScreenStatus(true) : adhdScreenStatus(false)}</p>;
+                  }
                   return <RiskBar key={type} label={moduleLabel[type]} value={result?.score ?? 0} level={result?.level} />;
                 })}
               </div>
@@ -185,7 +229,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               {latest ? (
                 <div className="mt-4">
                   <p className="text-sm font-medium text-heading">{moduleFullLabel[latest.type]}</p>
-                  <p className="text-xs text-muted">{formatDate(latest.createdAt, preferences.dateFormat)} · {latest.score}%</p>
+                  <p className="text-xs text-muted">{formatDate(latest.createdAt, preferences.dateFormat)} · {latest.adhdResult ? adhdScreenStatus(latest.adhdResult.screenPositive) : `${latest.score}%`}</p>
                   <p className="mt-3 text-sm leading-6 text-body">{latest.factors[0]?.label}: {latest.factors[0]?.detail}</p>
                   <Link href={`/results/${latest.id}`} className="mt-4 inline-flex">
                     <Button variant="secondary" size="sm">Open result</Button>
@@ -226,8 +270,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                     <p className="text-xs text-muted">{formatDate(item.createdAt, preferences.dateFormat)} · {item.teacher}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-heading text-2xl font-bold text-heading">{item.score}%</span>
-                    <RiskBadge level={item.riskLevel} />
+                    {item.adhdResult ? <span className="text-sm font-semibold text-heading">{adhdScreenStatus(item.adhdResult.screenPositive)}</span> : <><span className="font-heading text-2xl font-bold text-heading">{item.score}%</span><RiskBadge level={item.riskLevel} /></>}
                     <Link href={`/results/${item.id}`}><Button variant="secondary" size="sm">View Result</Button></Link>
                   </div>
                 </Card>
@@ -249,7 +292,17 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                 </button>
               ))}
             </div>
-            {chartData.length ? (
+            {timeline === "adhd" ? (
+              assessments.some((item) => item.type === "adhd") ? (
+                <ul className="mt-4 space-y-2 text-sm text-body">
+                  {assessments.filter((item) => item.type === "adhd").sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map((item) => (
+                    <li key={item.id}>{formatDate(item.createdAt, preferences.dateFormat)} · {item.adhdResult ? adhdScreenStatus(item.adhdResult.screenPositive) : adhdScreenStatus(item.riskLevel === "elevated" || item.riskLevel === "high")}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-8 text-sm text-muted">No {moduleLabel.adhd.toLowerCase()} assessments recorded yet.</p>
+              )
+            ) : chartData.length ? (
               <TimelineChart data={chartData} />
             ) : (
               <p className="mt-8 text-sm text-muted">No {moduleLabel[timeline].toLowerCase()} assessments recorded yet.</p>
@@ -263,13 +316,14 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
               <Card key={item.id}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-heading">{moduleFullLabel[item.type]}</p>
-                  <RiskBadge level={item.riskLevel} />
+                  {item.adhdResult ? <span className="text-sm font-medium text-heading">{adhdScreenStatus(item.adhdResult.screenPositive)}</span> : <RiskBadge level={item.riskLevel} />}
                 </div>
                 <p className="mt-2 text-xs text-muted">{formatDate(item.createdAt, preferences.dateFormat)}</p>
-                <p className="mt-3 text-sm leading-6 text-body">{item.explanation}</p>
+                <p className="mt-3 text-sm leading-6 text-body">{item.adhdResult?.message ?? item.explanation}</p>
+                {item.adhdResult ? <p className="mt-2 text-xs leading-5 text-faint">{item.adhdResult.disclaimer}</p> : null}
                 <ul className="mt-3 space-y-1 text-sm text-muted">
-                  {item.factors.slice(0, 3).map((factor) => (
-                    <li key={factor.label}>{factor.label} · {factor.impact} contribution</li>
+                  {(item.adhdResult ? item.adhdResult.topFactors.slice(0, 3).map((factor) => ({ key: factor.feature, text: `${factor.question}: ${factor.answer}` })) : item.factors.slice(0, 3).map((factor) => ({ key: factor.label, text: `${factor.label} · ${factor.impact} contribution` }))).map((factor) => (
+                    <li key={factor.key}>{factor.text}</li>
                   ))}
                 </ul>
                 <details className="mt-3 text-sm">
@@ -284,7 +338,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
         {section === "behaviour" ? (
           <div className="space-y-3">
             <div className="flex justify-end">
-              <Link href={`/assessment/adhd/${student.id}`}><Button>Log observation</Button></Link>
+              <Link href={`/behaviour/log/${student.id}`}><Button>Add observation</Button></Link>
             </div>
             {observations.length ? observations.map((item) => (
               <Card key={item.id}>
@@ -297,7 +351,7 @@ export function StudentProfile({ studentId, section }: { studentId: string; sect
                 </div>
                 {item.notes ? <p className="mt-3 text-sm leading-6 text-body">{item.notes}</p> : null}
               </Card>
-            )) : <EmptyState icon={<FileText className="h-5 w-5" />} title="No behaviour observations." description="Record a classroom observation to start this timeline." action={<Link href={`/assessment/adhd/${student.id}`}><Button>Log observation</Button></Link>} />}
+            )) : <EmptyState icon={<FileText className="h-5 w-5" />} title="No teacher observations." description="Record a classroom observation for longitudinal support. This does not start the ADHD screening." action={<Link href={`/behaviour/log/${student.id}`}><Button>Add observation</Button></Link>} />}
           </div>
         ) : null}
 

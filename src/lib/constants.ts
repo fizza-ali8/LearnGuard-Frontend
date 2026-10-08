@@ -57,7 +57,7 @@ export const NAV_GROUPS: {
   {
     label: "Monitoring",
     items: [
-      { href: "/behaviour", label: "Behaviour Logs", icon: Activity, match: "/behaviour" },
+      { href: "/behaviour", label: "Classroom Observations", icon: Activity, match: "/behaviour" },
       { href: "/heatmap", label: "Class Heatmap", icon: Grid3x3, match: "/heatmap" },
       { href: "/analytics", label: "Analytics", icon: ChartNoAxesCombined, match: "/analytics" },
       { href: "/history", label: "History", icon: History, match: "/history" },
@@ -119,10 +119,10 @@ export const MODEL_META: Record<
     dataset: "LG-WRITE-2026.1",
   },
   adhd: {
-    model: "Gradient Boosted Observation Model",
-    version: "v1.2",
+    model: "ADHD-Related Caregiver Screening Model",
+    version: "NSCH-2022",
     method: "SHAP",
-    dataset: "LG-OBS-2026.1",
+    dataset: "NSCH 2022",
   },
 };
 
@@ -153,7 +153,8 @@ export const HELP_CATEGORIES = [
   "Getting Started",
   "Running a Dyslexia Screening",
   "Uploading Handwriting",
-  "Recording Behaviour",
+  "ADHD Caregiver Questionnaire",
+  "Classroom Observations",
   "Understanding Risk Scores",
   "Understanding Explanations",
   "Reports",

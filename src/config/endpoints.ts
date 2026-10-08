@@ -7,6 +7,8 @@ export const endpoints = {
   dyslexiaAssessment: "/api/assessments/dyslexia",
   dysgraphiaAssessment: "/api/assessments/dysgraphia",
   adhdAssessment: "/api/assessments/adhd",
+  adhdQuestions: "/api/adhd/questions",
+  adhdPredict: "/api/adhd/predict",
   behaviour: "/api/behaviour",
   analytics: "/api/analytics",
   report: (id: string) => `/api/reports/${id}`,

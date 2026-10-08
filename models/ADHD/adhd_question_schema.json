@@ -1,0 +1,182 @@
+{
+  "sc_age_years": {
+    "label": "Child age in years",
+    "type": "integer",
+    "allowed": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "memorycond": {
+    "label": "Does this child have serious difficulty concentrating, remembering, or making decisions because of a physical, mental, or emotional condition?",
+    "options": {
+      "Yes": 1,
+      "No": 2
+    }
+  },
+  "k7q70_r": {
+    "label": "How often does this child argue too much?",
+    "options": {
+      "Always": 1,
+      "Usually": 2,
+      "Sometimes": 3,
+      "Never": 4
+    }
+  },
+  "k7q82_r": {
+    "label": "How often does this child care about doing well in school?",
+    "options": {
+      "Always": 1,
+      "Usually": 2,
+      "Sometimes": 3,
+      "Never": 4
+    }
+  },
+  "k7q83_r": {
+    "label": "How often does this child do all required homework?",
+    "options": {
+      "Always": 1,
+      "Usually": 2,
+      "Sometimes": 3,
+      "Never": 4
+    }
+  },
+  "k7q84_r": {
+    "label": "How often does this child work to finish tasks they start?",
+    "options": {
+      "Always": 1,
+      "Usually": 2,
+      "Sometimes": 3,
+      "Never": 4
+    }
+  },
+  "k7q85_r": {
+    "label": "How often does this child stay calm and in control when faced with a challenge?",
+    "options": {
+      "Always": 1,
+      "Usually": 2,
+      "Sometimes": 3,
+      "Never": 4
+    }
+  },
+  "grades": {
+    "label": "Across all subjects, what grades did this child get during the school year?",
+    "options": {
+      "Mostly A's": 1,
+      "Mostly A's and B's": 2,
+      "Mostly B's and C's": 3,
+      "Mostly C's and D's": 4,
+      "Mostly D's or lower": 5,
+      "School does not give these grades": 6
+    }
+  },
+  "k7q04r_r": {
+    "label": "During the past 12 months, how many times has the child’s school contacted the household about problems the child is having with school?",
+    "options": {
+      "None": 1,
+      "1 time": 2,
+      "2 or more times": 3
+    }
+  },
+  "makefriend": {
+    "label": "Compared with other children their age, how much difficulty does this child have making or keeping friends?",
+    "options": {
+      "No difficulty": 1,
+      "A little difficulty": 2,
+      "A lot of difficulty": 3
+    }
+  },
+  "hoursleep": {
+    "label": "During the past week, how many hours of sleep did this child get on most weeknights?",
+    "options": {
+      "Less than 6 hours": 1,
+      "6 hours": 2,
+      "7 hours": 3,
+      "8 hours": 4,
+      "9 hours": 5,
+      "10 hours": 6,
+      "11 or more hours": 7
+    }
+  },
+  "bedtime": {
+    "label": "How often does this child go to bed at about the same time on weeknights?",
+    "options": {
+      "Always": 1,
+      "Usually": 2,
+      "Sometimes": 3,
+      "Rarely": 4,
+      "Never": 5
+    }
+  },
+  "screentime": {
+    "label": "On most weekdays, about how much non-school screen time does this child have?",
+    "options": {
+      "Less than 1 hour": 1,
+      "1 hour": 2,
+      "2 hours": 3,
+      "3 hours": 4,
+      "4 or more hours": 5
+    }
+  },
+  "bully": {
+    "label": "During the past 12 months, how often did this child bully, pick on, or exclude other children?",
+    "options": {
+      "Never": 1,
+      "1–2 times in the past 12 months": 2,
+      "1–2 times per month": 3,
+      "1–2 times per week": 4,
+      "Almost every day": 5
+    }
+  },
+  "bullied_r": {
+    "label": "During the past 12 months, how often was this child bullied, picked on, or excluded by other children?",
+    "options": {
+      "Never": 1,
+      "1–2 times in the past 12 months": 2,
+      "1–2 times per month": 3,
+      "1–2 times per week": 4,
+      "Almost every day": 5
+    }
+  },
+  "physactiv": {
+    "label": "During the past week, on how many days did this child exercise, play a sport, or do at least 60 minutes of physical activity?",
+    "options": {
+      "0 days": 1,
+      "1–3 days": 2,
+      "4–6 days": 3,
+      "Every day": 4
+    }
+  },
+  "repeated": {
+    "label": "Since starting kindergarten, has this child repeated any grades?",
+    "options": {
+      "Yes": 1,
+      "No": 2
+    }
+  },
+  "k7q30": {
+    "label": "During the past 12 months, did this child participate in a sports team or take sports lessons after school or on weekends?",
+    "options": {
+      "Yes": 1,
+      "No": 2
+    }
+  },
+  "k7q31": {
+    "label": "During the past 12 months, did this child participate in any clubs or organizations after school or on weekends?",
+    "options": {
+      "Yes": 1,
+      "No": 2
+    }
+  },
+  "k7q32": {
+    "label": "During the past 12 months, did this child participate in other organized activities or lessons such as music, dance, language, or arts?",
+    "options": {
+      "Yes": 1,
+      "No": 2
+    }
+  }
+}

@@ -37,6 +37,25 @@ export interface RiskResult {
   level: RiskLevel;
   assessedAt?: string;
   confidence?: number;
+  researchScreen?: "elevated_pattern" | "no_elevated_pattern";
+  researchMessage?: string;
+}
+
+export interface AdhdTopFactor {
+  feature: string;
+  question: string;
+  answer: string;
+  direction: "toward_flag" | "away_from_flag";
+}
+
+export interface AdhdModelResult {
+  screenPositive: boolean;
+  message: string;
+  disclaimer: string;
+  modelVersion: string;
+  /** Research-model output used with the saved threshold. Not a diagnosis probability. */
+  modelScore?: number;
+  topFactors: AdhdTopFactor[];
 }
 
 export interface RiskProfile {
@@ -97,6 +116,9 @@ export interface Assessment {
   explanationImageUrl?: string;
   quality?: ImageQuality;
   isDemo?: boolean;
+  respondentRelationship?: string;
+  questionnaireSummary?: { section: string; label: string; answer: string }[];
+  adhdResult?: AdhdModelResult;
   status?: AssessmentStatus;
   model?: AssessmentModelMetadata;
 }

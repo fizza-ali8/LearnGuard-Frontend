@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui/display";
 import { ProgressRing, RiskBadge } from "@/components/ui/risk";
 import { formatActivityWhen } from "@/lib/format";
-import { isActionable, moduleLabel } from "@/lib/risk";
+import { isActionable, moduleConcernLevel, moduleLabel } from "@/lib/risk";
 import { getOverview, type AnalyticsSnapshot } from "@/services/analytics";
 import { useData } from "@/providers/data-provider";
 import { ClipboardPlus, UserPlus, Users } from "lucide-react";
@@ -112,7 +112,7 @@ export function DashboardView() {
               <Button variant="secondary">Start Assessment</Button>
             </Link>
             <Link href="/behaviour">
-              <Button variant="secondary">Log Behaviour</Button>
+              <Button variant="secondary">Classroom Observations</Button>
             </Link>
             <Link href="/heatmap">
               <Button variant="tertiary">View Heatmap</Button>
@@ -193,8 +193,12 @@ export function DashboardView() {
           {review.map((student) => {
             const main = (["dyslexia", "dysgraphia", "adhd"] as const)
               .map((type) => ({ type, result: student.riskProfile[type] }))
-              .filter((item) => item.result && isActionable(item.result.level))
-              .sort((a, b) => (b.result?.score ?? 0) - (a.result?.score ?? 0))[0];
+              .filter((item) => isActionable(moduleConcernLevel(item.result)))
+              .sort((a, b) => {
+                const aScore = a.result?.researchScreen ? -1 : a.result?.score ?? 0;
+                const bScore = b.result?.researchScreen ? -1 : b.result?.score ?? 0;
+                return bScore - aScore;
+              })[0];
             return (
               <div key={student.id} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-primary-dark">

@@ -10,6 +10,7 @@ import type { BehaviourObservation, RiskLevel } from "@/types";
 import { Activity } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 const BehaviourTrends = dynamic(
@@ -28,6 +29,7 @@ const BehaviourTrends = dynamic(
 
 export function BehaviourLogs() {
   const { observations, students } = useData();
+  const router = useRouter();
   const [studentId, setStudentId] = useState("all");
   const [subject, setSubject] = useState("all");
   const [risk, setRisk] = useState("all");
@@ -51,9 +53,14 @@ export function BehaviourLogs() {
   return (
     <div>
       <PageHeader
-        title="Behaviour Logs"
-        subtitle="Track repeated classroom observations over time."
-        actions={<Link href="/assessment/new"><Button>Log Behaviour</Button></Link>}
+        title="Classroom Observations"
+        subtitle="Teacher-recorded classroom observations for longitudinal support. These observations are not direct inputs to the current ADHD caregiver model."
+        actions={
+          <Select aria-label="Add an observation for" defaultValue="" onChange={(event) => { if (event.target.value) router.push(`/behaviour/log/${event.target.value}`); }}>
+            <option value="">Add observation…</option>
+            {students.map((student) => <option key={student.id} value={student.id}>{student.name}</option>)}
+          </Select>
+        }
       />
       <div className="mb-4 flex flex-col gap-2 md:flex-row">
         <div className="md:w-72"><SearchBox value={query} onChange={setQuery} placeholder="Search student or subject…" /></div>
@@ -73,10 +80,10 @@ export function BehaviourLogs() {
         <Input aria-label="To date" type="date" value={to} onChange={(event) => setTo(event.target.value)} className="h-11 w-auto" />
       </div>
       {rows.length === 0 ? (
-        <EmptyState icon={<Activity className="h-5 w-5" />} title="No behaviour observations." description="Add a classroom observation to start building a behavioural record." action={<Link href="/assessment/new"><Button>Log Behaviour</Button></Link>} />
+        <EmptyState icon={<Activity className="h-5 w-5" />} title="No classroom observations." description="Add a teacher observation to start a longitudinal record. This does not start an ADHD screening." />
       ) : (
         <DataTable
-          caption="Behaviour logs"
+          caption="Classroom observations"
           rows={rows}
           rowKey={(row) => row.id}
           columns={[
@@ -97,14 +104,14 @@ export function BehaviourLogs() {
 
 export function StudentBehaviour({ studentId }: { studentId: string }) {
   const { student, observations } = useStudent(studentId);
-  if (!student) return <EmptyState icon={<Activity className="h-5 w-5" />} title="Student not found." description="Return to the behaviour log and choose another record." />;
+  if (!student) return <EmptyState icon={<Activity className="h-5 w-5" />} title="Student not found." description="Return to classroom observations and choose another record." />;
   const ordered = [...observations].sort((a, b) => a.date.localeCompare(b.date));
   return (
     <div>
       <PageHeader
         title={`${student.name}`}
-        subtitle="Observation history for attention, off-task events and task completion."
-        actions={<Link href={`/assessment/adhd/${student.id}`}><Button>Add observation</Button></Link>}
+        subtitle="Teacher observations of attention, off-task events and task completion. These charts are not the ADHD model result."
+        actions={<Link href={`/behaviour/log/${student.id}`}><Button>Add observation</Button></Link>}
       />
       <BehaviourTrends
         attention={ordered.map((item) => ({ label: item.date.slice(5), value: item.sustainedAttentionMin }))}

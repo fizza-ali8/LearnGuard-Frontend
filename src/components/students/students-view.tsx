@@ -5,6 +5,7 @@ import { DataTable, EmptyState, FilterChip, PageHeader, Pagination, SearchBox, S
 import { Select } from "@/components/ui/inputs";
 import { DropdownMenu } from "@/components/ui/overlay";
 import { RiskBadge } from "@/components/ui/risk";
+import { adhdScreenStatus } from "@/data/adhd-questionnaire";
 import { GRADES } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { moduleLabel, riskLabel, screeningStatus, statusLabel } from "@/lib/risk";
@@ -146,7 +147,7 @@ export function StudentsView() {
                       const result = student.riskProfile[type];
                       return (
                         <span key={type} className="text-xs text-body">
-                          {moduleLabel[type]}: {result ? <RiskBadge level={result.level} className="ml-1 px-2 py-0.5" /> : "Not assessed"}
+                          {moduleLabel[type]}: {result?.researchScreen ? adhdScreenStatus(result.researchScreen === "elevated_pattern") : result ? <RiskBadge level={result.level} className="ml-1 px-2 py-0.5" /> : "Not assessed"}
                         </span>
                       );
                     })}

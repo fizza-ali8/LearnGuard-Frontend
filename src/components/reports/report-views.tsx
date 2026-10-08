@@ -6,7 +6,8 @@ import { DataTable, EmptyState, PageHeader, Skeleton } from "@/components/ui/dis
 import { RiskBadge, RiskBar } from "@/components/ui/risk";
 import { PRODUCT } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
-import { moduleFullLabel, moduleLabel, OVERALL_CONCERN_NOTE } from "@/lib/risk";
+import { adhdScreenStatus, featureLabel } from "@/data/adhd-questionnaire";
+import { moduleFullLabel, moduleLabel, OVERALL_CONCERN_NOTE, riskLabel } from "@/lib/risk";
 import { downloadText } from "@/lib/utils";
 import { usePreferences } from "@/providers/preferences-provider";
 import { useData } from "@/providers/data-provider";
@@ -15,6 +16,21 @@ import { FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+function groupedSummary(entries: { section: string; label: string; answer: string }[]) {
+  const groups: { section: string; items: { section: string; label: string; answer: string }[] }[] = [];
+  const indexBySection = new Map<string, number>();
+  entries.forEach((entry) => {
+    const index = indexBySection.get(entry.section);
+    if (index === undefined) {
+      indexBySection.set(entry.section, groups.length);
+      groups.push({ section: entry.section, items: [entry] });
+    } else {
+      groups[index].items.push(entry);
+    }
+  });
+  return groups;
+}
 
 export function ReportsView() {
   const { reports, students, createReport, ready } = useData();
@@ -121,9 +137,9 @@ export function ReportPreview({ studentId }: { studentId: string }) {
                 <div key={type}>
                   <div className="mb-1 flex items-center justify-between text-sm">
                     <span>{moduleLabel[type]}</span>
-                    {result ? <RiskBadge level={result.level} /> : <span className="text-muted">Not assessed</span>}
+                    {result?.researchScreen ? <span className="text-heading">{adhdScreenStatus(result.researchScreen === "elevated_pattern")}</span> : result ? <RiskBadge level={result.level} /> : <span className="text-muted">Not assessed</span>}
                   </div>
-                  {result ? <RiskBar value={result.score} level={result.level} /> : null}
+                  {result && !result.researchScreen ? <RiskBar value={result.score} level={result.level} /> : null}
                 </div>
               );
             })}
@@ -137,11 +153,49 @@ export function ReportPreview({ studentId }: { studentId: string }) {
           return (
             <section key={type} className="mt-8">
               <h3 className="text-base font-semibold text-heading">{moduleFullLabel[type]}</h3>
-              <p className="mt-2 text-sm text-muted">{item.score}% · {formatDate(item.createdAt, preferences.dateFormat)}</p>
-              <p className="mt-2 text-sm leading-6 text-body">{item.explanation}</p>
+              {type === "adhd" && item.adhdResult ? (
+                <div className="mt-2 space-y-1 text-sm text-muted">
+                  <p>Status: {adhdScreenStatus(item.adhdResult.screenPositive)}</p>
+                  <p>Questionnaire completion date: {formatDate(item.createdAt, preferences.dateFormat)}</p>
+                  {item.respondentRelationship ? <p>Respondent type: {item.respondentRelationship}</p> : null}
+                  <p className="leading-6 text-body">{item.adhdResult.message}</p>
+                  <p className="leading-6">{item.adhdResult.disclaimer}</p>
+                  {item.isDemo ? <p className="text-xs">Demonstration record. A new questionnaire uses the saved screening model.</p> : null}
+                </div>
+              ) : type === "adhd" ? (
+                <div className="mt-2 space-y-1 text-sm text-muted">
+                  <p>Screening level: {riskLabel[item.riskLevel]}</p>
+                  <p>Score: {item.score}%</p>
+                  <p>Questionnaire completion date: {formatDate(item.createdAt, preferences.dateFormat)}</p>
+                  {item.respondentRelationship ? <p>Respondent type: {item.respondentRelationship}</p> : null}
+                  <p className="text-xs">Earlier demonstration record. A new questionnaire uses the saved screening model.</p>
+                </div>
+              ) : (
+                <p className="mt-2 text-sm text-muted">{item.score}% · {formatDate(item.createdAt, preferences.dateFormat)}</p>
+              )}
+              {type === "adhd" && item.adhdResult ? null : <p className="mt-2 text-sm leading-6 text-body">{item.explanation}</p>}
+              <p className="mt-3 text-sm font-medium text-heading">{type === "adhd" ? "Key model-influencing responses" : "Signals"}</p>
               <ul className="mt-2 text-sm text-muted">
-                {item.factors.map((factor) => <li key={factor.label}>{factor.label}: {factor.detail ?? factor.impact}</li>)}
+                {type === "adhd" && item.adhdResult
+                  ? item.adhdResult.topFactors.map((factor) => <li key={factor.feature}>{factor.question}: {factor.answer}. {factor.direction === "toward_flag" ? "Associated with the elevated pattern." : "Associated with moving away from the elevated pattern."} This is not evidence of a cause.</li>)
+                  : item.factors.map((factor) => <li key={factor.label}>{type === "adhd" ? featureLabel(factor.label) : factor.label}: {factor.detail ?? factor.impact}</li>)}
               </ul>
+              {type === "adhd" && item.recommendation ? <p className="mt-3 text-sm leading-6 text-body">{item.recommendation}</p> : null}
+              {type === "adhd" && item.questionnaireSummary?.length ? (
+                <details className="mt-3 text-sm">
+                  <summary className="cursor-pointer font-medium text-primary-dark">Caregiver questionnaire summary</summary>
+                  <div className="mt-2 space-y-3">
+                    {groupedSummary(item.questionnaireSummary).map((group) => (
+                      <div key={group.section}>
+                        <p className="font-medium text-heading">{group.section}</p>
+                        <ul className="mt-1 space-y-1 text-muted">
+                          {group.items.map((entry, index) => <li key={`${group.section}-${entry.label}-${index}`}>{entry.label}: {entry.answer}</li>)}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ) : null}
             </section>
           );
         })}
@@ -149,7 +203,7 @@ export function ReportPreview({ studentId }: { studentId: string }) {
           <h3 className="text-base font-semibold text-heading">Risk Timeline</h3>
           <ul className="mt-2 space-y-1 text-sm text-body">
             {timeline.map((item) => (
-              <li key={item.id}>{formatDate(item.createdAt, preferences.dateFormat)} · {moduleLabel[item.type]} · {item.score}%</li>
+              <li key={item.id}>{formatDate(item.createdAt, preferences.dateFormat)} · {moduleLabel[item.type]} · {item.adhdResult ? adhdScreenStatus(item.adhdResult.screenPositive) : `${item.score}%`}</li>
             ))}
           </ul>
         </section>

@@ -5,6 +5,7 @@ import { Card, PageHeader, SearchBox } from "@/components/ui/display";
 import { AssessmentStepper } from "@/components/assessment/shared";
 import { screeningStatus, statusLabel } from "@/lib/risk";
 import { useData } from "@/providers/data-provider";
+import { isAdhdEligible } from "@/data/adhd-questionnaire";
 import { BookOpen, ClipboardList, Mic } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -81,12 +82,13 @@ function Wizard() {
             />
             <ModuleCard
               icon={<ClipboardList className="h-5 w-5" />}
-              title="ADHD-Related Screening"
-              input="Classroom observation"
-              body="Record attention and task-related behavioural indicators."
-              time="3–5 min"
-              action="Start Observation"
-              disabled={!student?.consentVerified}
+              title="ADHD-Related Caregiver Screening"
+              input="Caregiver questionnaire"
+              body="A 20-item caregiver questionnaire covering attention, school functioning, social behaviour, sleep and activities."
+              time="5–7 min"
+              note={student && !isAdhdEligible(student.age) ? "Current model supports children aged 6–11." : "For ages 6–11"}
+              action="Start Questionnaire"
+              disabled={!student?.consentVerified || !student || !isAdhdEligible(student.age)}
               onClick={() => router.push(`/assessment/adhd/${studentId}`)}
             />
           </div>
@@ -103,6 +105,7 @@ function ModuleCard({
   input,
   body,
   time,
+  note,
   action,
   onClick,
   disabled,
@@ -112,6 +115,7 @@ function ModuleCard({
   input: string;
   body: string;
   time: string;
+  note?: string;
   action: string;
   onClick: () => void;
   disabled?: boolean;
@@ -123,6 +127,7 @@ function ModuleCard({
       <p className="mt-1 text-sm font-medium text-primary-dark">{input}</p>
       <p className="mt-3 flex-1 text-sm leading-6 text-muted">{body}</p>
       <p className="mt-4 text-xs text-faint">Estimated time: {time}</p>
+      {note ? <p className="mt-1 text-xs text-muted">{note}</p> : null}
       <Button className="mt-4" onClick={onClick} disabled={disabled}>{action}</Button>
     </Card>
   );
