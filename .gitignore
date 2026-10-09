@@ -55,6 +55,9 @@ backend/dyslexia/**/*.joblib
 # Dysgraphia training arrays. X_train.npy is over GitHub's 100 MB limit.
 models/Dysgraphia/dysgraphia_cnn_data.npz/
 
+# Trained dysgraphia weights, plots, and evaluation files. Do not commit.
+backend/dysgraphia/artifacts/
+
 # Python bytecode
 __pycache__/
 *.py[cod]
